@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Camp Tracker</title>
+<link rel="preconnect" href="https://unpkg.com">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+ integrity="sha256-p4NxAoJBhIINfQ3ynHTCxqHZH4MZ6KQYtQnXHnQwQp8=" crossorigin=""/>
+<style>
+:root{
+  --bg:#0f172a;--panel:#111827;--card:#1f2937;--line:#334155;
+  --text:#f8fafc;--muted:#cbd5e1;--accent:#22c55e;--warn:#f59e0b;--danger:#ef4444;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{padding:16px 16px 10px;background:linear-gradient(180deg,#0b1220,#0f172a);position:sticky;top:0;z-index:999}
+h1{font-size:22px;margin:0 0 4px}
+.sub{font-size:13px;color:var(--muted)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+button{border:0;border-radius:12px;padding:11px 14px;font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:#052e16}
+.secondary{background:#334155;color:white}
+.danger{background:#7f1d1d;color:white}
+#map{height:42vh;min-height:300px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+main{padding:14px;max-width:1000px;margin:auto}
+.grid{display:grid;grid-template-columns:1fr;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}
+.card h2{font-size:17px;margin:0 0 10px}
+label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+input,textarea,select{width:100%;padding:11px;border-radius:10px;border:1px solid #475569;background:#0b1220;color:white}
+textarea{min-height:74px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
+.checks label{display:flex;align-items:center;gap:7px;margin:4px 0;color:white;font-size:14px}
+.checks input{width:auto}
+.list{display:grid;gap:10px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.item-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.badge{font-size:11px;padding:4px 8px;border-radius:999px;background:#334155}
+.badge.high{background:#7f1d1d}.badge.med{background:#78350f}.badge.low{background:#14532d}
+.meta{font-size:12px;color:var(--muted);margin-top:6px}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.actions button{padding:8px 10px;font-size:12px}
+.empty{color:var(--muted);text-align:center;padding:24px 10px}
+.note{font-size:12px;color:#cbd5e1;line-height:1.45}
+footer{padding:25px 16px 40px;color:#94a3b8;font-size:12px;text-align:center}
+@media(min-width:760px){.grid{grid-template-columns:360px 1fr}#map{height:48vh}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Camp Tracker</h1>
+  <div class="sub">Outreach coordination • location-based • privacy-first</div>
+  <div class="toolbar">
+    <button class="primary" onclick="useMyLocation()">＋ Add Current Location</button>
+    <button class="secondary" onclick="exportData()">Export Data</button>
+    <button class="secondary" onclick="document.getElementById('importFile').click()">Import Data</button>
+    <input id="importFile" type="file" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
+</header>
+
+<div id="map"></div>
+
+<main>
+  <div class="grid">
+    <section class="card">
+      <h2 id="formTitle">Add / Update Camp</h2>
+      <div class="note">Track locations and outreach needs, not personal identities. Avoid names, DOBs, or exact identifying details.</div>
+
+      <input type="hidden" id="recordId">
+
+      <div class="row">
+        <div>
+          <label>Latitude</label>
+          <input id="lat" type="number" step="any" placeholder="36.7378">
+        </div>
+        <div>
+          <label>Longitude</label>
+          <input id="lng" type="number" step="any" placeholder="-119.7871">
+        </div>
+      </div>
+
+      <label>Location label</label>
+      <input id="label" placeholder="Example: Blackstone near canal">
+
+      <div class="row">
+        <div>
+          <label>Approx. people</label>
+          <input id="people" type="number" min="0" placeholder="0">
+        </div>
+        <div>
+          <label>Priority</label>
+          <select id="priority">
+            <option>Low</option>
+            <option selected>Medium</option>
+            <option>High</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Needs observed</label>
+      <div class="checks">
+        <label><input type="checkbox" value="Water" class="need"> Water</label>
+        <label><input type="checkbox" value="Food" class="need"> Food</label>
+        <label><input type="checkbox" value="Housing" class="need"> Housing</label>
+        <label><input type="checkbox" value="Medical" class="need"> Medical</label>
+        <label><input type="checkbox" value="Hygiene" class="need"> Hygiene</label>
+        <label><input type="checkbox" value="Narcan" class="need"> Narcan</label>
+        <label><input type="checkbox" value="Pet support" class="need"> Pet support</label>
+        <label><input type="checkbox" value="Documents" class="need"> Documents</label>
+      </div>
+
+      <label>Outreach status</label>
+      <select id="status">
+        <option>Not visited</option>
+        <option>Outreach attempted</option>
+        <option>Contact made</option>
+        <option>Services offered</option>
+        <option>Follow-up needed</option>
+        <option>Inactive / no longer present</option>
+      </select>
+
+      <label>Last observed / visited</label>
+      <input id="date" type="datetime-local">
+
+      <label>Notes</label>
+      <textarea id="notes" placeholder="General observations and service coordination notes only"></textarea>
+
+      <div class="toolbar">
+        <button class="primary" onclick="saveRecord()">Save Camp</button>
+        <button class="secondary" onclick="clearForm()">Clear</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Tracked Locations</h2>
+      <div id="list" class="list"></div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  Data stays in this browser unless you export it. Do not use this tool to publicly expose vulnerable people or share precise locations outside authorized outreach coordination.
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+ integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+const STORE = 'campTrackerRecordsV1';
+let records = JSON.parse(localStorage.getItem(STORE) || '[]');
+let markers = {};
+const fresno = [36.7378, -119.7871];
+const map = L.map('map').setView(fresno, 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+map.on('click', e => {
+  document.getElementById('lat').value = e.latlng.lat.toFixed(6);
+  document.getElementById('lng').value = e.latlng.lng.toFixed(6);
+});
+
+function nowLocalValue(){
+  const d = new Date();
+  d.setMinutes(d.getMinutes()-d.getTimezoneOffset());
+  return d.toISOString().slice(0,16);
+}
+document.getElementById('date').value = nowLocalValue();
+
+function saveStore(){
+  localStorage.setItem(STORE, JSON.stringify(records));
+}
+
+function escapeHtml(s=''){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+
+function saveRecord(){
+  const lat = parseFloat(document.getElementById('lat').value);
+  const lng = parseFloat(document.getElementById('lng').value);
+  if(!Number.isFinite(lat) || !Number.isFinite(lng)){
+    alert('Choose a map location or enter valid latitude and longitude.');
+    return;
+  }
+  const id = document.getElementById('recordId').value || crypto.randomUUID();
+  const needs = [...document.querySelectorAll('.need:checked')].map(x=>x.value);
+  const rec = {
+    id, lat, lng,
+    label: document.getElementById('label').value.trim() || 'Unnamed location',
+    people: parseInt(document.getElementById('people').value || '0',10),
+    priority: document.getElementById('priority').value,
+    needs,
+    status: document.getElementById('status').value,
+    date: document.getElementById('date').value || nowLocalValue(),
+    notes: document.getElementById('notes').value.trim(),
+    updatedAt: new Date().toISOString()
+  };
+  const i = records.findIndex(r=>r.id===id);
+  if(i>=0) records[i]=rec; else records.unshift(rec);
+  saveStore(); render(); clearForm();
+  map.setView([lat,lng], 16);
+}
+
+function clearForm(){
+  document.getElementById('recordId').value='';
+  document.getElementById('label').value='';
+  document.getElementById('people').value='';
+  document.getElementById('priority').value='Medium';
+  document.getElementById('status').value='Not visited';
+  document.getElementById('notes').value='';
+  document.getElementById('date').value=nowLocalValue();
+  document.querySelectorAll('.need').forEach(x=>x.checked=false);
+  document.getElementById('formTitle').textContent='Add / Update Camp';
+}
+
+function editRecord(id){
+  const r = records.find(x=>x.id===id); if(!r) return;
+  document.getElementById('recordId').value=r.id;
+  document.getElementById('lat').value=r.lat;
+  document.getElementById('lng').value=r.lng;
+  document.getElementById('label').value=r.label;
+  document.getElementById('people').value=r.people;
+  document.getElementById('priority').value=r.priority;
+  document.getElementById('status').value=r.status;
+  document.getElementById('date').value=r.date;
+  document.getElementById('notes').value=r.notes;
+  document.querySelectorAll('.need').forEach(x=>x.checked=r.needs.includes(x.value));
+  document.getElementById('formTitle').textContent='Edit Camp';
+  window.scrollTo({top: document.getElementById('map').offsetHeight, behavior:'smooth'});
+  map.setView([r.lat,r.lng],16);
+}
+
+function deleteRecord(id){
+  if(!confirm('Delete this camp record?')) return;
+  records = records.filter(x=>x.id!==id);
+  saveStore(); render();
+}
+
+function focusRecord(id){
+  const r=records.find(x=>x.id===id); if(r) map.setView([r.lat,r.lng],17);
+}
+
+function directions(id){
+  const r=records.find(x=>x.id===id); if(!r) return;
+  window.open(`https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lng}`,'_blank');
+}
+
+function render(){
+  Object.values(markers).forEach(m=>map.removeLayer(m));
+  markers={};
+  const list=document.getElementById('list');
+  if(!records.length){list.innerHTML='<div class="empty">No locations saved yet.</div>';return;}
+  list.innerHTML='';
+  records.forEach(r=>{
+    const marker=L.marker([r.lat,r.lng]).addTo(map)
+      .bindPopup(`<b>${escapeHtml(r.label)}</b><br>${escapeHtml(r.status)}<br>Priority: ${escapeHtml(r.priority)}`);
+    markers[r.id]=marker;
+    const div=document.createElement('div');
+    const pclass=r.priority==='High'?'high':r.priority==='Medium'?'med':'low';
+    div.className='item';
+    div.innerHTML=`
+      <div class="item-top">
+        <div><strong>${escapeHtml(r.label)}</strong></div>
+        <span class="badge ${pclass}">${escapeHtml(r.priority)}</span>
+      </div>
+      <div class="meta">${escapeHtml(r.status)} • approx. ${r.people} people</div>
+      <div class="meta">${r.needs.length ? 'Needs: '+escapeHtml(r.needs.join(', ')) : 'Needs: none recorded'}</div>
+      <div class="meta">Last update: ${escapeHtml((r.date||'').replace('T',' '))}</div>
+      ${r.notes?`<div class="meta">${escapeHtml(r.notes)}</div>`:''}
+      <div class="actions">
+        <button class="secondary" onclick="focusRecord('${r.id}')">Map</button>
+        <button class="secondary" onclick="editRecord('${r.id}')">Edit</button>
+        <button class="secondary" onclick="directions('${r.id}')">Directions</button>
+        <button class="danger" onclick="deleteRecord('${r.id}')">Delete</button>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+function useMyLocation(){
+  if(!navigator.geolocation){alert('Location is not supported on this device/browser.');return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude,longitude}=pos.coords;
+    document.getElementById('lat').value=latitude.toFixed(6);
+    document.getElementById('lng').value=longitude.toFixed(6);
+    map.setView([latitude,longitude],17);
+  }, err=>alert('Could not access location. Check browser location permission.'));
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(records,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='camp-tracker-data.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importData(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      if(!Array.isArray(data)) throw new Error();
+      records=data; saveStore(); render();
+    }catch{alert('That file does not look like a Camp Tracker export.');}
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+render();
+</script>
+</body>
+</html>
