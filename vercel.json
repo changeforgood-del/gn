@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    {"source":"/reentry-housing","destination":"/reentry-housing/index.html"}
+  ],
+  "functions": {"api/rewrite.js":{"maxDuration":10}}
+}
