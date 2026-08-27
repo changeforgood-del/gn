@@ -1,0 +1,1 @@
+ArcGIS OAuth integration uses a user-supplied public App ID / Client ID stored only in the browser. Never store ArcGIS passwords, client secrets, or long-lived tokens in this repository.
