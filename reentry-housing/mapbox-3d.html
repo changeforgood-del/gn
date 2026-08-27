@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Valley Reentry Housing Navigator — Mapbox 3D</title>
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.27.0/mapbox-gl.css" rel="stylesheet" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.27.0/mapbox-gl.js"></script>
+<style>
+html,body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#f4f7fb;color:#182230}.shell{display:grid;grid-template-columns:350px 1fr;min-height:100vh}.side{background:#fff;border-right:1px solid #dce3ec;padding:16px;overflow:auto}.brand{font-size:1.1rem;font-weight:900}.muted{font-size:.82rem;color:#667085;line-height:1.45}.card{border:1px solid #dce3ec;border-radius:14px;padding:12px;margin-top:12px;background:#fff}.field{margin-top:9px}.field label{display:block;font-size:.75rem;font-weight:800;margin-bottom:4px}.field input,.field select{width:100%;box-sizing:border-box;padding:10px;border:1px solid #cfd8e3;border-radius:9px;background:#fff;font:inherit}.row{display:flex;gap:8px;flex-wrap:wrap}button{border:0;border-radius:10px;padding:10px 12px;background:#174a7e;color:#fff;font-weight:800;cursor:pointer}button.secondary{background:#edf2f7;color:#17324d}.status{padding:10px;border-radius:10px;background:#fff7e6;border:1px solid #f2d18f;color:#704d00;font-size:.8rem}.tiny{font-size:.72rem;color:#667085}.pill{display:inline-block;border-radius:999px;background:#eef4ff;color:#294f83;padding:4px 8px;font-size:.72rem;font-weight:800;margin:2px}.kpi{font-size:1.35rem;font-weight:900}.mapwrap{min-width:0;position:relative}#map{height:100vh;width:100%}.marker{width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 1px 6px #0005}.best{background:#16876a}.possible{background:#2867b2}.applied{background:#7b4ab5}.denied{background:#b42318}@media(max-width:820px){.shell{grid-template-columns:1fr}.side{border-right:0;border-bottom:1px solid #dce3ec}#map{height:65vh}}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="side">
+<div class="brand">3D Housing Area Viewer</div>
+<p class="muted">Inspect housing opportunities in 3D before referral. View buildings, streets, terrain, and nearby area context for clients returning from jail or prison.</p>
+<div class="status" id="tokenStatus">Enter a Mapbox <b>public access token</b> that starts with <b>pk.</b>. Do not use a secret token that starts with <b>sk.</b>.</div>
+<div class="card">
+<div class="field"><label>Mapbox public token</label><input id="token" type="password" placeholder="pk.ey..." autocomplete="off" /></div>
+<div class="row" style="margin-top:9px"><button id="saveToken">Save on this device</button><button class="secondary" id="clearToken">Clear token</button></div>
+<p class="tiny">The token is saved only in this browser's local storage and is not committed to GitHub.</p>
+</div>
+<div class="card"><div class="tiny">ACTIVE CLIENT</div><div id="clientCard" class="muted">No saved client is open. Open a client in the main housing navigator first.</div></div>
+<div class="card">
+<b>Find an area</b>
+<div class="field"><label>Address or place</label><input id="searchText" placeholder="Property address, neighborhood, city" /></div>
+<div class="row" style="margin-top:9px"><button id="searchBtn">Search</button><button class="secondary" id="clientAreaBtn">Go to client area</button></div>
+</div>
+<div class="card">
+<b>3D controls</b>
+<div class="row" style="margin-top:8px"><button id="streetBtn">Street view angle</button><button class="secondary" id="topBtn">Top-down</button><button class="secondary" id="satBtn">Satellite 3D</button></div>
+<p class="tiny">Drag to move. Hold two fingers or right-click/drag to change pitch and rotation. Scroll/pinch to zoom.</p>
+</div>
+<div class="card">
+<b>Add housing opportunity</b>
+<div class="field"><label>Name</label><input id="pName" placeholder="Property or program" /></div>
+<div class="field"><label>Status</label><select id="pStatus"><option>Best Match</option><option>Possible Match</option><option>Applied</option><option>Waitlist</option><option>Denied</option></select></div>
+<div class="field"><label>Address</label><input id="pAddress" placeholder="Street, city, CA" /></div>
+<button id="addProperty" style="margin-top:9px">Find + add to 3D map</button>
+</div>
+<div class="card"><div class="tiny">HOUSING PIPELINE</div><div class="row"><div><div id="bestCount" class="kpi">0</div><div class="tiny">Best</div></div><div><div id="possibleCount" class="kpi">0</div><div class="tiny">Possible</div></div><div><div id="appliedCount" class="kpi">0</div><div class="tiny">Applied/wait</div></div></div></div>
+</aside>
+<main class="mapwrap"><div id="map"></div></main>
+</div>
+<script>
+const cityCoords={Stockton:[-121.2908,37.9577],Modesto:[-120.9969,37.6391],Merced:[-120.4829,37.3022],Madera:[-120.0607,36.9613],Fresno:[-119.7871,36.7378],Visalia:[-119.2921,36.3302],Hanford:[-119.6457,36.3275],Porterville:[-119.0168,36.0652],Bakersfield:[-119.0187,35.3733]};
+let map=null;let markers=[];let opportunities=JSON.parse(localStorage.getItem('vrhn_mapbox_housing')||'[]');
+const clients=JSON.parse(localStorage.getItem('vrhn_clients')||'[]');const currentId=localStorage.getItem('vrhn_current')||'';const current=clients.find(c=>c.id===currentId);
+const tokenEl=document.getElementById('token');tokenEl.value=localStorage.getItem('vrhn_mapbox_token')||'';
+if(current){document.getElementById('clientCard').innerHTML=`<b>${current.name}</b><br>${current.city} <span class="pill">${current.housingNow||'Housing status unknown'}</span><br>Income: $${Number(current.income||0).toLocaleString()}/mo • Household: ${current.household||1}`}
+function counts(){bestCount.textContent=opportunities.filter(x=>x.status==='Best Match').length;possibleCount.textContent=opportunities.filter(x=>x.status==='Possible Match').length;appliedCount.textContent=opportunities.filter(x=>x.status==='Applied'||x.status==='Waitlist').length}
+function cls(s){if(s==='Best Match')return'best';if(s==='Possible Match')return'possible';if(s==='Denied')return'denied';return'applied'}
+function addMarker(o){if(!map)return;const el=document.createElement('div');el.className=`marker ${cls(o.status)}`;const m=new mapboxgl.Marker(el).setLngLat([o.lon,o.lat]).setPopup(new mapboxgl.Popup({offset:20}).setHTML(`<b>${o.name}</b><br>${o.status}<br>${o.address||''}`)).addTo(map);markers.push(m)}
+async function geocode(q){const token=localStorage.getItem('vrhn_mapbox_token');if(!token)return null;const url=`https://api.mapbox.com/search/geocode/v6/forward?q=${encodeURIComponent(q)}&country=US&limit=1&access_token=${encodeURIComponent(token)}`;const r=await fetch(url);if(!r.ok)return null;const j=await r.json();const f=j.features&&j.features[0];return f&&f.geometry&&f.geometry.coordinates?{coords:f.geometry.coordinates,name:(f.properties&&f.properties.full_address)||f.place_name||q}:null}
+function init(){const token=localStorage.getItem('vrhn_mapbox_token');if(!token||!token.startsWith('pk.')){document.getElementById('tokenStatus').innerHTML='Enter a Mapbox <b>public access token</b> that starts with <b>pk.</b>.';return}mapboxgl.accessToken=token;const center=current&&cityCoords[current.city]?cityCoords[current.city]:[-119.70,36.55];map=new mapboxgl.Map({container:'map',style:'mapbox://styles/mapbox/standard',center,zoom:current?14:7,pitch:current?58:35,bearing:-20,antialias:true,config:{basemap:{show3dObjects:true}}});map.addControl(new mapboxgl.NavigationControl({visualizePitch:true}));map.on('load',()=>{opportunities.forEach(addMarker);document.getElementById('tokenStatus').textContent='Mapbox 3D is connected on this device.'});map.on('error',()=>{document.getElementById('tokenStatus').textContent='Mapbox could not load. Check the public token and its URL restrictions.'})}
+saveToken.addEventListener('click',()=>{const t=tokenEl.value.trim();if(!t.startsWith('pk.')){alert('Use a Mapbox public token starting with pk. Do not enter an sk. secret token.');return}localStorage.setItem('vrhn_mapbox_token',t);location.reload()});
+clearToken.addEventListener('click',()=>{localStorage.removeItem('vrhn_mapbox_token');location.reload()});
+searchBtn.addEventListener('click',async()=>{if(!map)return alert('Add your Mapbox public token first.');const q=searchText.value.trim();if(!q)return;const g=await geocode(q);if(!g)return alert('Location not found.');map.flyTo({center:g.coords,zoom:17,pitch:62,bearing:-20,duration:1300})});
+clientAreaBtn.addEventListener('click',()=>{if(!map||!current||!cityCoords[current.city])return;map.flyTo({center:cityCoords[current.city],zoom:14,pitch:58,bearing:-20,duration:1200})});
+streetBtn.addEventListener('click',()=>{if(map)map.easeTo({zoom:17,pitch:68,bearing:-25,duration:900})});topBtn.addEventListener('click',()=>{if(map)map.easeTo({pitch:0,bearing:0,duration:800})});satBtn.addEventListener('click',()=>{if(!map)return;map.setStyle(map.getStyle().sprite&&String(map.getStyle().sprite).includes('standard-satellite')?'mapbox://styles/mapbox/standard':'mapbox://styles/mapbox/standard-satellite');setTimeout(()=>opportunities.forEach(addMarker),1200)});
+addProperty.addEventListener('click',async()=>{if(!map)return alert('Add your Mapbox public token first.');const name=pName.value.trim(),address=pAddress.value.trim(),status=pStatus.value;if(!name||!address)return alert('Enter the housing name and address.');const g=await geocode(address);if(!g)return alert('Address not found.');const o={id:crypto.randomUUID(),name,address:g.name,status,lon:g.coords[0],lat:g.coords[1]};opportunities.push(o);localStorage.setItem('vrhn_mapbox_housing',JSON.stringify(opportunities));addMarker(o);counts();map.flyTo({center:g.coords,zoom:17,pitch:65,bearing:-20,duration:1300});pName.value='';pAddress.value=''});
+counts();init();
+</script>
+</body>
+</html>
