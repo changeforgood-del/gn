@@ -33,6 +33,7 @@ jobs:
           cp -R faw-2026 _site/faw-2026
           cp -R reentry-housing _site/reentry-housing
           cp reentry-housing/mobile-app.html _site/reentry-housing/index.html
+          sed -i 's#</body>#<script src="note-insights.js"></script></body>#' _site/reentry-housing/index.html
           cat > _site/index.html <<'EOF'
           <!doctype html>
           <html lang="en">
