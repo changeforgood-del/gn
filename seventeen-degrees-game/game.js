@@ -1,0 +1,31 @@
+const S={day:1,week:1,memory:0,suspicion:0,money:186000,forks:0,trust:0,grief:0,loops:0,kept:false,flags:{priyaa:false,gold:false,stapler:false,lateReset:false,records:false}};
+const $=id=>document.getElementById(id);const log=[];
+const scenes=[
+{t:'Station 47',c:'Morning Shift',x:'Four straight tines slide under the press. Everyone else bends one fork at a time. Your hands can do two before the safety light finishes blinking.',bg:'factory',q:[['Bend two at once','prod'],['Bend one, perfectly','safe'],['Watch the warning light instead','watch']]},
+{t:'Operation Crimson Bite',c:'Office Emergency',x:'A red stapler is missing from Claims Processing. Three departments have already formed search parties. Someone has drawn a tactical map on the quarterly forecast.',bg:'office',q:[['Join the stapler hunt','stapler'],['Keep bending forks','prod'],['Ask why this matters so much','sus']]},
+{t:'Private Client Tray',c:'Luxury Line',x:'A black velvet tray arrives. One gold fork is missing. The remaining pieces cost more than your first car. The supervisor says, “Do not think about it.”',bg:'gold',q:[['Do not think about it','safe'],['Inspect the empty slot','gold'],['Ask who the client is','sus']]},
+{t:'The Scratch',c:'Continuity Error',x:'There is a scratch beside your keyboard. You remember it pointing the other direction yesterday, which should be impossible because yesterday was erased.',bg:'glitch',q:[['Write it in your End Point log','memory'],['Ignore it','safe'],['Show Mara','trust']]},
+{t:'Copier Duel',c:'Administrative Combat',x:'Two coworkers are arguing over who jammed the copier. The argument is unfolding exactly like one you somehow remember.',bg:'office',q:[['Say their next sentence before they do','sus'],['Walk away','safe'],['Write down the sequence','memory']]},
+{t:'5:00 PM',c:'Mandatory Synchronization',x:'Every monitor goes white. A clean team is a kind team. Everyone must wipe together so no conflict, mistake, resentment, or proprietary exposure survives the workday.',bg:'reset',q:[['Wipe with everyone','wipe'],['Fake the wipe','refuse'],['Write one more sentence first','memory']]}
+];
+function render(scene){$('date').textContent=`Week ${S.week} · Day ${S.day} of 260`;$('memory').textContent=S.memory;$('suspicion').textContent=S.suspicion;$('money').textContent=S.money.toLocaleString();$('forks').textContent=S.forks;$('chapter').textContent=scene.c;$('title').textContent=scene.t;$('text').textContent=scene.x;const ch=$('choices');ch.innerHTML='';scene.q.forEach(([txt,a])=>{const b=document.createElement('button');b.textContent=txt;b.onclick=()=>act(a,txt);ch.appendChild(b)});$('scene').className='scene '+(scene.bg==='glitch'?'glitch':'');}
+function note(s){log.unshift(`W${S.week} D${S.day}: ${s}`);$('log').innerHTML=log.slice(0,18).map(x=>`<div>${x}</div>`).join('')}
+function act(a,label){
+ if(a==='prod'){S.forks+=2;S.money+=120;note('Dual-bend output increased.');}
+ if(a==='safe'){S.forks+=1;note('Stayed within procedure.');}
+ if(a==='watch'){S.memory++;note('Watched the system instead of the work.');}
+ if(a==='stapler'){S.flags.stapler=true;S.trust++;note('Helped recover the Crimson Bite stapler.');}
+ if(a==='sus'){S.suspicion+=2;note('Asked a question nobody liked.');}
+ if(a==='gold'){S.flags.gold=true;S.memory+=2;S.suspicion++;note('Inspected the private client tray.');}
+ if(a==='memory'){S.memory+=2;note('Preserved a continuity clue in writing.');}
+ if(a==='trust'){S.trust++;note('Told Mara something felt wrong.');}
+ if(a==='wipe'){S.loops++;S.memory=Math.max(0,S.memory-1);note('Memory wiped. Work log remains.');advance();return;}
+ if(a==='refuse'){S.kept=true;S.memory+=5;S.suspicion+=4;S.flags.lateReset=true;note('You remained awake after everyone else disappeared.');special();return;}
+ next();
+}
+function next(){const idx=Math.floor(Math.random()*(scenes.length-1));render(scenes[idx]);}
+function special(){render({t:'The Unwritten Minute',c:'After the Ending',x:'Everyone around you goes slack at once. Cooling fans become thunder. A woman in a dark maintenance uniform walks between the sleeping workers, counting them. She stops at your chair. Her face is ordinary. The wrongness is around her.',bg:'glitch',q:[['Keep pretending to sleep','memory'],['Open your eyes','sus'],['Whisper “Priya?”','priyaa']]});}
+function advance(){S.day++;if(S.day>5){S.day=1;S.week++;}if(S.week>52){ending();return;}if(S.suspicion>18&&Math.random()<.35){render({t:'Employee Calm Room',c:'Wellness Intervention',x:'Pastel walls. Tiny waterfall. A poster reads YOUR MEMORY IS NOT YOUR IDENTITY. The counselor is the only person in the building without a reset bracelet.',bg:'office',q:[['Pretend you feel better','safe'],['Ask why they do not wipe','sus'],['Memorize the room','memory']]});return;}next();}
+function ending(){let title='THE BEND REMAINS',text='You reach the end of the work year.';if(S.kept&&S.memory>30&&S.flags.gold){title='THE DAY THEY REMEMBERED';text='You jam the synchronization bus with a rack of seventeen-degree forks. The next morning, hundreds of workers wake carrying two days at once. Some laugh. Some scream. Some finally remember who disappeared.'}else if(S.suspicion>30){title='WORKFLOW WELLNESS';text='Your desk is empty on Monday. Nobody remembers your name. A new employee sits at Station 47 and finds a notebook in the drawer written in handwriting that feels strangely familiar.'}else if(S.memory>18){title='PAPER PEOPLE';text='You finish the year with stacks of End Point logs proving that the office changes overnight. Nobody believes you because nobody remembers contradiction. You keep writing anyway.'}else{text='You finish 260 days, richer, faster, and highly decorated. You cannot remember a single evening. Your annual award says CONTINUITY EXCELLENCE.'}render({t:title,c:'Year End',x:text,bg:'sad',q:[['Begin another year', 'restart']]});}
+const oldAct=act;act=function(a,l){if(a==='priyaa'){S.flags.priyaa=true;S.memory+=8;S.suspicion+=5;note('The maintenance woman reacted to the name Priya.');advance();return;}if(a==='restart'){location.reload();return;}oldAct(a,l)};
+render(scenes[0]);note('Employment begins at LuxTine Utensil Systems.');
