@@ -32,6 +32,13 @@ jobs:
           mkdir -p _site
           cp -R faw-2026 _site/faw-2026
           cp faw-2026/elite.html _site/faw-2026/index.html
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('_site/faw-2026/index.html')
+          s = p.read_text()
+          s = s.replace('</body>', '<script src="./master-data.js"></script></body>')
+          p.write_text(s)
+          PY
           cp -R reentry-housing _site/reentry-housing
           cp reentry-housing/stop-autopilot.html _site/reentry-housing/index.html
           cat > _site/index.html <<'EOF'
