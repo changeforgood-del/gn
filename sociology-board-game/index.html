@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>THE SOCIAL LADDER — A 3D Sociology Game</title>
+  <meta name="theme-color" content="#090b13" />
+  <style>
+    :root{--bg:#090b13;--panel:rgba(15,18,31,.9);--text:#f6f7fb;--muted:#a7aec2;--line:rgba(255,255,255,.12);--accent:#d8ff4f;--danger:#ff5f7a;--good:#5fffc8;--gold:#ffd56a;--blue:#6da7ff}
+    *{box-sizing:border-box} html,body{height:100%;margin:0;background:radial-gradient(circle at 20% 10%,#20243d,#090b13 42%,#05060a);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;overflow:hidden}
+    button,select,input{font:inherit} button{cursor:pointer}
+    #app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 365px;gap:0}
+    #stage{position:relative;min-width:0;overflow:hidden}
+    #three{position:absolute;inset:0}
+    #topbar{position:absolute;top:14px;left:14px;right:14px;display:flex;gap:10px;justify-content:space-between;align-items:flex-start;pointer-events:none}
+    .brand,.roundbox{pointer-events:auto;background:rgba(6,8,15,.72);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:0 18px 40px rgba(0,0,0,.25)}
+    .brand b{font-size:15px;letter-spacing:.18em}.brand small{display:block;color:var(--muted);margin-top:4px}.roundbox{font-size:12px;text-align:right}.roundbox strong{display:block;font-size:22px;color:var(--accent)}
+    #hint{position:absolute;left:14px;bottom:14px;background:rgba(6,8,15,.72);border:1px solid var(--line);border-radius:12px;padding:9px 11px;color:var(--muted);font-size:12px;max-width:450px}
+    #sidebar{background:linear-gradient(180deg,rgba(16,19,32,.98),rgba(8,10,17,.98));border-left:1px solid var(--line);padding:16px;overflow:auto}
+    .section{border:1px solid var(--line);background:rgba(255,255,255,.03);border-radius:16px;padding:14px;margin-bottom:12px}.section h3{margin:0 0 10px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#dce0ed}
+    .identity{font-size:13px;line-height:1.45;color:var(--muted)} .identity b{color:var(--text)}
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:10px}.stat span{display:block;color:var(--muted);font-size:11px}.stat b{font-size:20px}.stat.good b{color:var(--good)}.stat.warn b{color:var(--gold)}.stat.bad b{color:var(--danger)}
+    #rollBtn{width:100%;border:0;border-radius:14px;padding:14px 16px;font-weight:900;letter-spacing:.06em;background:linear-gradient(135deg,var(--accent),#75ff85);color:#0b1110;box-shadow:0 10px 25px rgba(185,255,80,.18)} #rollBtn:disabled{opacity:.35;cursor:not-allowed}
+    .minirow{display:flex;gap:8px;margin-top:8px}.minirow button{flex:1;border:1px solid var(--line);background:#171b2a;color:#fff;border-radius:10px;padding:9px}
+    #log{font-size:12px;line-height:1.45;max-height:240px;overflow:auto}.logitem{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07)}.logitem:last-child{border:0}.tag{display:inline-block;padding:2px 7px;border-radius:999px;font-size:10px;margin-right:5px;background:rgba(255,255,255,.08)}
+    #eventModal,#setupModal,#endModal{position:fixed;inset:0;background:rgba(2,3,8,.75);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modal{width:min(720px,100%);max-height:92vh;overflow:auto;background:linear-gradient(180deg,#15192a,#0e111c);border:1px solid rgba(255,255,255,.16);border-radius:24px;padding:22px;box-shadow:0 30px 100px rgba(0,0,0,.5)}
+    #setupModal{display:flex}.modal h1,.modal h2{margin:0 0 8px}.modal p{color:var(--muted);line-height:1.55}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px}.field select,.field input{width:100%;background:#090c15;border:1px solid var(--line);color:#fff;border-radius:11px;padding:11px}
+    .primary{border:0;border-radius:12px;padding:12px 15px;background:var(--accent);color:#10130b;font-weight:900}.secondary{border:1px solid var(--line);border-radius:12px;padding:12px 15px;background:#171b2a;color:#fff;font-weight:700}.choices{display:grid;gap:10px;margin-top:14px}.choice{border:1px solid var(--line);background:#111522;border-radius:14px;padding:12px;color:#fff;text-align:left}.choice:hover{border-color:rgba(216,255,79,.65);transform:translateY(-1px)}.choice b{display:block;margin-bottom:4px}.choice small{color:var(--muted);line-height:1.35}.event-type{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;background:rgba(109,167,255,.14);color:#b8d2ff;border:1px solid rgba(109,167,255,.28)}
+    .impact{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.impact span{font-size:11px;padding:4px 7px;border-radius:8px;background:rgba(255,255,255,.06)}
+    .note{font-size:12px;color:#c7cce0;background:rgba(109,167,255,.08);border-left:3px solid var(--blue);padding:10px 12px;border-radius:8px;margin:12px 0}.meter{height:7px;background:#090c15;border-radius:99px;overflow:hidden;margin-top:6px}.meter i{display:block;height:100%;background:linear-gradient(90deg,#ff657f,#ffd66d,#75ff9d);width:50%}
+    @media(max-width:900px){#app{grid-template-columns:1fr}#sidebar{position:absolute;z-index:10;right:10px;top:90px;width:min(340px,calc(100% - 20px));max-height:55vh;border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.5)}#hint{right:14px}.grid{grid-template-columns:1fr}.brand small{display:none}}
+  </style>
+</head>
+<body>
+<div id="app">
+  <main id="stage">
+    <div id="three"></div>
+    <div id="topbar"><div class="brand"><b>THE SOCIAL LADDER</b><small>A 3D sociology board game about systems, choices, luck, and unequal starting conditions.</small></div><div class="roundbox">LIFE STAGE<strong id="roundLabel">1 / 12</strong></div></div>
+    <div id="hint">Drag to rotate • Scroll/pinch to zoom • The board physically shifts as life stages change.</div>
+  </main>
+  <aside id="sidebar">
+    <div class="section"><h3>Your social location</h3><div id="identityText" class="identity">Choose a character to begin.</div></div>
+    <div class="section"><h3>Life indicators</h3><div class="stats">
+      <div class="stat good"><span>Money</span><b id="money">0</b></div><div class="stat good"><span>Stability</span><b id="stability">0</b></div>
+      <div class="stat good"><span>Health</span><b id="health">0</b></div><div class="stat good"><span>Social capital</span><b id="social">0</b></div>
+      <div class="stat bad"><span>Stress</span><b id="stress">0</b></div><div class="stat warn"><span>Opportunity</span><b id="opportunity">0</b></div>
+    </div></div>
+    <div class="section"><h3>Turn</h3><button id="rollBtn" disabled>ROLL LIFE DICE</button><div class="minirow"><button id="viewBtn">Center board</button><button id="rulesBtn">How it works</button></div></div>
+    <div class="section"><h3>Timeline</h3><div id="log"></div></div>
+  </aside>
+</div>
+
+<div id="setupModal"><div class="modal">
+  <span class="event-type">CHARACTER CREATION</span><h1 style="margin-top:10px">Build a social location</h1>
+  <p>This game does <b>not</b> treat race or identity as ability. Identity changes exposure to social systems, bias, access, representation, and institutional treatment. You still make choices, and chance still matters.</p>
+  <div class="grid">
+    <div class="field"><label>Race / ethnicity</label><select id="race"><option>Black / African American</option><option>White</option><option>Latino / Hispanic</option><option>Asian American</option><option>Native American / Alaska Native</option><option>Middle Eastern / North African</option><option>Native Hawaiian / Pacific Islander</option><option>Multiracial</option><option>Custom / another identity</option></select></div>
+    <div class="field"><label>Starting class</label><select id="class"><option>Low income</option><option>Working class</option><option selected>Middle income</option><option>Upper middle income</option><option>Wealthy</option></select></div>
+    <div class="field"><label>Gender</label><select id="gender"><option>Woman</option><option>Man</option><option>Nonbinary</option><option>Another identity</option></select></div>
+    <div class="field"><label>Neighborhood</label><select id="neighborhood"><option>Under-resourced</option><option selected>Mixed-resource</option><option>Well-resourced</option></select></div>
+    <div class="field"><label>Disability status</label><select id="disability"><option selected>No disability selected</option><option>Visible disability</option><option>Non-visible disability</option></select></div>
+    <div class="field"><label>Immigration context</label><select id="immigration"><option selected>Citizen / no immigration barrier</option><option>Naturalized citizen</option><option>Permanent resident</option><option>Temporary / uncertain status</option></select></div>
+  </div>
+  <div class="note">The point is to make structural inequality visible without turning stereotypes into “traits.” A character can face bias because of how institutions or people respond to them—not because their identity makes them inherently better or worse.</div>
+  <button id="startBtn" class="primary">START THE GAME</button>
+</div></div>
+
+<div id="eventModal"><div class="modal"><span id="eventType" class="event-type"></span><h2 id="eventTitle" style="margin-top:10px"></h2><p id="eventText"></p><div id="biasNote" class="note" style="display:none"></div><div id="choices" class="choices"></div></div></div>
+<div id="endModal"><div class="modal"><span class="event-type">FINAL OUTCOME</span><h1 id="endTitle" style="margin-top:10px"></h1><p id="endText"></p><div id="endStats"></div><div class="minirow"><button class="primary" id="restartBtn">Play another life</button><button class="secondary" id="closeEndBtn">Inspect board</button></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.min.js"></script>
+<script>
+(() => {
+  const $=id=>document.getElementById(id);
+  const clamp=(n,min=0,max=100)=>Math.max(min,Math.min(max,n));
+  const rnd=a=>a[Math.floor(Math.random()*a.length)];
+  const state={turn:0,pos:0,identity:null,stats:{money:50,stability:50,health:70,social:50,stress:30,opportunity:50},history:[]};
+
+  const raceBias={
+    'Black / African American':1.18,'White':0.62,'Latino / Hispanic':1.02,'Asian American':0.82,'Native American / Alaska Native':1.2,'Middle Eastern / North African':1.02,'Native Hawaiian / Pacific Islander':1.0,'Multiracial':.92,'Custom / another identity':.9
+  };
+  const classStart={
+    'Low income':{money:20,stability:30,social:35,opportunity:35,stress:48},'Working class':{money:35,stability:42,social:43,opportunity:43,stress:40},'Middle income':{money:50,stability:55,social:50,opportunity:52,stress:32},'Upper middle income':{money:68,stability:68,social:62,opportunity:67,stress:25},'Wealthy':{money:88,stability:82,social:80,opportunity:82,stress:18}
+  };
+  const neighborhoodStart={'Under-resourced':{opportunity:-10,stress:8,health:-5},'Mixed-resource':{opportunity:0,stress:0,health:0},'Well-resourced':{opportunity:9,stress:-5,health:4}};
+
+  const events=[
+    {type:'Education',title:'The Advanced Class Gate',text:'A counselor is deciding who gets recommended for an advanced course that opens doors later.',bias:'Recommendation systems can reproduce bias even when nobody says an explicitly discriminatory rule out loud.',choices:[
+      {label:'Ask directly for placement',desc:'Advocate for yourself and request the criteria.',fx:{opportunity:8,stress:3,social:2},risk:{bias:true,fail:{opportunity:-5,stress:5},success:{opportunity:6}}},
+      {label:'Find a teacher ally',desc:'Use a relationship to get information and support.',fx:{social:7,stress:-1},risk:{chance:.25,fail:{stress:4},success:{opportunity:5}}},
+      {label:'Stay quiet',desc:'Avoid conflict now, but possibly lose access later.',fx:{stress:-3,opportunity:-7}}
+    ]},
+    {type:'Work',title:'The Interview',text:'A job would meaningfully improve your finances, but the hiring process depends on “culture fit.”',bias:'Research on hiring discrimination often focuses on how names, networks, accents, appearance, and stereotypes can influence supposedly neutral decisions.',choices:[
+      {label:'Interview as yourself',desc:'No masking. Emphasize competence and directness.',fx:{stress:-2},risk:{bias:true,fail:{money:-3,opportunity:-5,stress:6},success:{money:12,stability:8,opportunity:7}}},
+      {label:'Code-switch / mask',desc:'Try to match what you think the employer expects.',fx:{stress:8},risk:{bias:true,boost:.12,fail:{stress:5},success:{money:12,stability:8,opportunity:7}}},
+      {label:'Use a referral',desc:'Leverage social capital to get past the first filter.',cost:{social:6},risk:{chance:.18,fail:{stress:4},success:{money:14,stability:9,opportunity:8}}}
+    ]},
+    {type:'Housing',title:'Apartment Application',text:'You found an apartment near work. The landlord has several qualified applicants.',bias:'Housing outcomes can be shaped by income, credit, discrimination, screening algorithms, deposits, eviction history, and neighborhood segregation.',choices:[
+      {label:'Apply immediately',desc:'Pay the application fee and take the shot.',cost:{money:4},risk:{bias:true,fail:{money:-2,stress:8,stability:-5},success:{stability:12,stress:-4,opportunity:4}}},
+      {label:'Ask a co-signer',desc:'Use family or network support if available.',cost:{social:5},risk:{chance:.14,fail:{stress:4},success:{stability:13,stress:-5}}},
+      {label:'Stay where you are',desc:'Avoid immediate risk and cost.',fx:{money:2,stability:-4,stress:3}}
+    ]},
+    {type:'Health',title:'The Sick Day',text:'You wake up sick before an important shift. Missing work could cost money or reputation.',bias:'Health is social as well as biological: paid leave, job flexibility, insurance, transportation, and workplace power all influence outcomes.',choices:[
+      {label:'Rest and get care',desc:'Protect health, risk income.',fx:{health:10,money:-8,stress:-3}},
+      {label:'Go to work sick',desc:'Protect income now, pay in health.',fx:{money:5,health:-10,stress:7}},
+      {label:'Ask for flexibility',desc:'Try to negotiate.',risk:{chance:.35,fail:{money:-5,stress:6},success:{health:8,stability:3,stress:-3}}}
+    ]},
+    {type:'Policing',title:'Public Space Encounter',text:'An officer stops you in a public area and asks what you are doing there.',bias:'People can experience policing differently based on race, neighborhood, age, class, disability, gender expression, and local policy. The game models unequal exposure—not criminality.',choices:[
+      {label:'Comply briefly',desc:'Try to end the encounter quickly.',risk:{bias:true,severity:1.1,fail:{stress:13,opportunity:-3},success:{stress:4}}},
+      {label:'Ask if you are free to leave',desc:'Assert a boundary calmly.',risk:{bias:true,severity:1.25,fail:{stress:16,stability:-3},success:{social:2,stress:3}}},
+      {label:'Call someone you trust',desc:'Bring a witness/support person into the interaction.',cost:{social:3},risk:{bias:true,boost:.18,fail:{stress:9},success:{stress:1,social:2}}}
+    ]},
+    {type:'Family',title:'Caregiving Collision',text:'A family member needs help during a week when your job is already demanding.',bias:'Caregiving burdens are not evenly distributed, and workplaces differ in how much flexibility they provide.',choices:[
+      {label:'Provide the care yourself',desc:'Protect family relationship, absorb the time cost.',fx:{social:10,money:-6,stress:8}},
+      {label:'Pay for help',desc:'Use money to protect time.',fx:{money:-12,stress:-4,stability:4}},
+      {label:'Split care through your network',desc:'Coordinate several people.',risk:{chance:.22,fail:{stress:8,social:-3},success:{social:6,stress:-4}}}
+    ]},
+    {type:'Education',title:'College Debt Offer',text:'A credential could increase future opportunity, but the financing package requires significant debt.',bias:'Education can increase mobility while also reproducing inequality through tuition, debt, admissions, legacy advantages, and uneven school preparation.',choices:[
+      {label:'Take the loan',desc:'Trade present security for future opportunity.',fx:{money:-13,opportunity:15,stress:8}},
+      {label:'Work and study part-time',desc:'Slower path, lower debt, higher strain.',fx:{money:-5,opportunity:9,health:-5,stress:10}},
+      {label:'Skip the credential',desc:'Keep finances stable but narrow some pathways.',fx:{money:4,opportunity:-5,stress:-2}}
+    ]},
+    {type:'Network',title:'The Closed-Door Opportunity',text:'A major opportunity is being discussed informally at a social event you were not originally invited to.',bias:'Social capital—who knows you, trusts you, and brings you into rooms—can turn into material opportunity.',choices:[
+      {label:'Ask for an introduction',desc:'Spend social capital to enter the network.',cost:{social:4},risk:{chance:.25,fail:{stress:4},success:{social:8,opportunity:10}}},
+      {label:'Build your own route',desc:'Create a parallel project and make your work visible.',fx:{money:-4,stress:5},risk:{chance:.38,fail:{stress:3},success:{social:7,opportunity:9,money:5}}},
+      {label:'Ignore it',desc:'Protect energy.',fx:{stress:-5,opportunity:-3}}
+    ]},
+    {type:'Gender',title:'Credit for the Idea',text:'Your idea is repeated by someone else in a meeting and suddenly gets more attention.',bias:'Status expectations can shape who is seen as authoritative, competent, likable, or “leadership material.”',choices:[
+      {label:'Claim credit in the room',desc:'Correct the record immediately.',risk:{bias:true,severity:.8,fail:{stress:7,social:-3},success:{social:6,opportunity:7}}},
+      {label:'Document it afterward',desc:'Send a written recap with your contribution.',fx:{stress:2},risk:{chance:.2,fail:{opportunity:-2},success:{opportunity:5,stability:2}}},
+      {label:'Let it go',desc:'Avoid social friction.',fx:{stress:-2,opportunity:-5}}
+    ]},
+    {type:'Disability',title:'Accommodation Request',text:'A change in your body or environment makes a workplace accommodation useful.',bias:'Disability outcomes often depend on accessibility, stigma, bureaucratic rules, transportation, healthcare, and whether accommodations are actually implemented.',choices:[
+      {label:'Request the accommodation',desc:'Use the formal process.',risk:{chance:.25,fail:{stress:8,health:-4},success:{health:10,stability:7,stress:-4}}},
+      {label:'Informally modify your routine',desc:'Solve around the system yourself.',fx:{health:3,stress:5,money:-4}},
+      {label:'Push through without it',desc:'Avoid disclosure at a health cost.',fx:{health:-10,stress:7}}
+    ]},
+    {type:'Money',title:'Emergency Expense',text:'A surprise expense arrives: car repair, medical bill, family emergency, or broken appliance.',bias:'Wealth buffers shocks. Two people with the same income can experience the same emergency very differently depending on savings and family resources.',choices:[
+      {label:'Pay from savings',desc:'Absorb it with money.',fx:{money:-15,stress:2}},
+      {label:'Borrow from your network',desc:'Preserve cash, spend social capital.',fx:{social:-7,stress:4,money:-4}},
+      {label:'Delay the expense',desc:'Keep money now, risk larger instability later.',fx:{money:3,stability:-10,stress:8}}
+    ]},
+    {type:'Community',title:'Collective Action',text:'People in your neighborhood are organizing around transit, housing, safety, or school funding.',bias:'Collective efficacy can change the rules of the game, not just help one player adapt to them.',choices:[
+      {label:'Organize actively',desc:'Spend time now to build collective power.',fx:{money:-4,stress:3,social:13,opportunity:7}},
+      {label:'Support quietly',desc:'Donate or share information.',fx:{money:-5,social:6,stress:-1}},
+      {label:'Stay out of it',desc:'Protect time and money.',fx:{money:2,stress:-2,social:-3}}
+    ]}
+  ];
+
+  const extraEvents=[
+    {type:'Luck',title:'Unexpected Break',text:'A random connection notices your work and opens a door.',choices:[{label:'Take the opportunity',desc:'Say yes and rearrange your life.',fx:{opportunity:12,social:7,stress:3}},{label:'Pass for now',desc:'Protect stability.',fx:{stability:3,stress:-3}}]},
+    {type:'Institution',title:'Paperwork Maze',text:'A benefit, permit, school, or service requires confusing forms, deadlines, and documents.',choices:[{label:'Fight through the process',desc:'Spend time and stress.',fx:{stress:8},risk:{chance:.22,fail:{opportunity:-3},success:{money:7,stability:6}}},{label:'Find a navigator',desc:'Use social capital to reduce bureaucracy.',cost:{social:3},fx:{stress:-2},risk:{chance:.12,fail:{stress:4},success:{stability:7,opportunity:4}}}]},
+    {type:'Neighborhood',title:'Transit Failure',text:'Your usual transportation fails on a day with an important obligation.',choices:[{label:'Pay for a fast alternative',desc:'Use money to protect opportunity.',fx:{money:-8,stability:2}},{label:'Take the slow route',desc:'Save cash but risk being late.',risk:{chance:.42,fail:{opportunity:-5,stress:6},success:{money:1}}},{label:'Call someone',desc:'Use your network.',fx:{social:-3,stress:-2}}]}
+  ];
+
+  function identityBias(){
+    const i=state.identity; let b=raceBias[i.race]||.9;
+    if(i.class==='Low income')b+=.18; if(i.class==='Working class')b+=.08;
+    if(i.neighborhood==='Under-resourced')b+=.12;
+    if(i.gender==='Woman')b+=.08; if(i.gender==='Nonbinary'||i.gender==='Another identity')b+=.14;
+    if(i.disability!=='No disability selected')b+=.16;
+    if(i.immigration==='Temporary / uncertain status')b+=.2; else if(i.immigration==='Permanent resident')b+=.07;
+    return b;
+  }
+
+  function startGame(){
+    state.identity={race:$('race').value,class:$('class').value,gender:$('gender').value,neighborhood:$('neighborhood').value,disability:$('disability').value,immigration:$('immigration').value};
+    state.turn=0;state.pos=0;state.history=[];
+    state.stats={money:50,stability:50,health:70,social:50,stress:30,opportunity:50,...classStart[state.identity.class]};
+    const n=neighborhoodStart[state.identity.neighborhood]; Object.keys(n).forEach(k=>state.stats[k]=clamp(state.stats[k]+n[k]));
+    if(state.identity.disability!=='No disability selected'){state.stats.health-=5;state.stats.stress+=3}
+    if(state.identity.immigration==='Temporary / uncertain status'){state.stats.stability-=8;state.stats.stress+=8}
+    if(state.identity.gender==='Nonbinary'||state.identity.gender==='Another identity')state.stats.stress+=3;
+    normalize();render();$('setupModal').style.display='none';$('rollBtn').disabled=false;log('START','Your character enters the board. Starting conditions reflect class, neighborhood, accessibility, and institutional exposure—not personal worth.');movePawn(0,true);
+  }
+
+  function normalize(){Object.keys(state.stats).forEach(k=>state.stats[k]=Math.round(clamp(state.stats[k])))}
+  function applyFx(fx={}){Object.entries(fx).forEach(([k,v])=>state.stats[k]=(state.stats[k]||0)+v);normalize()}
+  function canPay(cost={}){return Object.entries(cost).every(([k,v])=>(state.stats[k]||0)>=v)}
+  function pay(cost={}){Object.entries(cost).forEach(([k,v])=>state.stats[k]-=v);normalize()}
+  function riskResult(risk){
+    if(!risk)return {success:true,bias:false};
+    let failChance=risk.chance??.28,wasBias=false;
+    if(risk.bias){wasBias=true;failChance=(.18*identityBias()*(risk.severity||1))-(risk.boost||0);failChance=clamp(failChance,.06,.62)}
+    return {success:Math.random()>failChance,bias:wasBias,prob:failChance};
+  }
+
+  function roll(){
+    $('rollBtn').disabled=true;const die=1+Math.floor(Math.random()*6);animateBoard();
+    setTimeout(()=>{state.pos=Math.min(35,state.pos+die);movePawn(state.pos);log('ROLL',`You rolled ${die} and moved to space ${state.pos+1}.`);setTimeout(()=>showEvent(),450)},500);
+  }
+  function showEvent(){
+    const pool=Math.random()<.2?extraEvents:events; const ev=rnd(pool); state.currentEvent=ev;
+    $('eventType').textContent=ev.type.toUpperCase();$('eventTitle').textContent=ev.title;$('eventText').textContent=ev.text;
+    $('biasNote').style.display=ev.bias?'block':'none';$('biasNote').textContent=ev.bias||'';
+    $('choices').innerHTML='';
+    ev.choices.forEach((c,idx)=>{
+      const btn=document.createElement('button');btn.className='choice';
+      const impacts=[]; if(c.fx)Object.entries(c.fx).forEach(([k,v])=>impacts.push(`${v>0?'+':''}${v} ${k}`));if(c.cost)Object.entries(c.cost).forEach(([k,v])=>impacts.push(`cost ${v} ${k}`));
+      btn.innerHTML=`<b>${c.label}</b><small>${c.desc}</small>${impacts.length?`<div class="impact">${impacts.map(x=>`<span>${x}</span>`).join('')}</div>`:''}`;
+      btn.onclick=()=>choose(idx);$('choices').appendChild(btn);
+    });$('eventModal').style.display='flex';
+  }
+  function choose(idx){
+    const ev=state.currentEvent,c=ev.choices[idx];
+    if(c.cost&&!canPay(c.cost)){log('LIMIT',`You could not afford the social/resource cost of “${c.label}.” The game converted it to a stress penalty.`);applyFx({stress:6,opportunity:-2});}
+    else {if(c.cost)pay(c.cost);applyFx(c.fx);const result=riskResult(c.risk);if(c.risk){applyFx(result.success?c.risk.success:c.risk.fail);let detail=result.success?'worked':'did not work';if(result.bias)detail+=` (systemic-barrier risk was ${Math.round(result.prob*100)}% for this social location)`;log(result.success?'OUTCOME':'BARRIER',`${c.label}: ${detail}.`)}}
+    state.turn++;render();$('eventModal').style.display='none';
+    if(state.turn>=12||state.pos>=35||state.stats.health<=0||state.stats.stability<=0){endGame()}else{$('rollBtn').disabled=false;phaseShift()}
+  }
+
+  function endGame(){
+    $('rollBtn').disabled=true;const s=state.stats;const mobility=Math.round((s.money+s.stability+s.health+s.social+s.opportunity+(100-s.stress))/6);
+    let title='A Complicated Outcome',text='Your life does not reduce to one score.';
+    if(mobility>=72){title='High Mobility, With Costs';text='You finish with strong resources and access. The timeline shows how much came from choices, luck, networks, and structural position.'}
+    else if(mobility>=52){title='Stable, Uneven Progress';text='You built meaningful stability, but some systems helped while others extracted time, money, health, or stress.'}
+    else if(mobility>=34){title='Precarious Stability';text='You kept moving, but repeated shocks and barriers consumed resources. One bad event often mattered more because there was less buffer.'}
+    else{title='Systems Overwhelmed the Buffer';text='The board produced compounding disadvantage. This is not a statement about character or effort; it shows how repeated barriers can accumulate.'}
+    $('endTitle').textContent=title;$('endText').textContent=text;const gap=Math.round(identityBias()*100);
+    $('endStats').innerHTML=`<div class="section"><b>Composite life outcome: ${mobility}/100</b><div class="meter"><i style="width:${mobility}%"></i></div><p style="font-size:12px">Structural exposure index: ${gap}. This is an educational game mechanic, not a claim that every person with this identity has the same experience.</p></div>`;
+    $('endModal').style.display='flex';
+  }
+
+  function render(){
+    const s=state.stats;['money','stability','health','social','stress','opportunity'].forEach(k=>$(k).textContent=s[k]);$('roundLabel').textContent=`${Math.min(state.turn+1,12)} / 12`;
+    if(state.identity)$('identityText').innerHTML=`<b>${state.identity.race}</b><br>${state.identity.gender} • ${state.identity.class}<br>${state.identity.neighborhood} neighborhood<br>${state.identity.disability}<br>${state.identity.immigration}`;
+  }
+  function log(tag,msg){state.history.unshift({tag,msg});$('log').innerHTML=state.history.slice(0,15).map(x=>`<div class="logitem"><span class="tag">${x.tag}</span>${x.msg}</div>`).join('')}
+
+  // THREE.JS BOARD
+  let scene,camera,renderer,group,pawn,tiles=[],targetRotY=-.55,targetRotX=.72;
+  function init3D(){
+    scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x080a12,.034);
+    camera=new THREE.PerspectiveCamera(45,1,.1,100);camera.position.set(0,13,18);camera.lookAt(0,0,0);
+    renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;$('three').appendChild(renderer.domElement);
+    const amb=new THREE.AmbientLight(0xbfc8ff,1.45);scene.add(amb);const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(8,14,7);key.castShadow=true;scene.add(key);const rim=new THREE.PointLight(0xd8ff4f,26,30);rim.position.set(-8,5,-8);scene.add(rim);
+    group=new THREE.Group();group.rotation.set(targetRotX,targetRotY,0);scene.add(group);
+    const base=new THREE.Mesh(new THREE.BoxGeometry(15,0.45,15),new THREE.MeshStandardMaterial({color:0x111525,roughness:.72,metalness:.1}));base.position.y=-.4;base.receiveShadow=true;group.add(base);
+    const colors=[0x5b6cff,0xff637f,0x74e6b3,0xffce66,0xa986ff,0x5ac9ff];
+    const coords=[];for(let layer=0;layer<3;layer++){const min=-5.8+layer*2,max=5.8-layer*2;const step=1.55;for(let x=min;x<=max+.01;x+=step)coords.push([x,min]);for(let z=min+step;z<=max+.01;z+=step)coords.push([max,z]);for(let x=max-step;x>=min-.01;x-=step)coords.push([x,max]);for(let z=max-step;z>min;z-=step)coords.push([min,z])}
+    coords.slice(0,36).forEach((p,i)=>{const geo=new THREE.BoxGeometry(1.25,.26,1.25);const mat=new THREE.MeshStandardMaterial({color:colors[i%colors.length],roughness:.48,metalness:.18,emissive:colors[i%colors.length],emissiveIntensity:.035});const m=new THREE.Mesh(geo,mat);m.position.set(p[0],0,p[1]);m.castShadow=true;m.receiveShadow=true;m.userData.baseY=0;m.userData.idx=i;group.add(m);tiles.push(m)});
+    const pgeo=new THREE.CapsuleGeometry(.28,.7,6,14),pmat=new THREE.MeshStandardMaterial({color:0xf6f7fb,roughness:.22,metalness:.55,emissive:0xd8ff4f,emissiveIntensity:.22});pawn=new THREE.Mesh(pgeo,pmat);pawn.castShadow=true;group.add(pawn);movePawn(0,true);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(7.1,.06,8,100),new THREE.MeshBasicMaterial({color:0xd8ff4f,transparent:true,opacity:.18}));ring.rotation.x=Math.PI/2;ring.position.y=-.1;group.add(ring);
+    bindControls();resize();addEventListener('resize',resize);animate();
+  }
+  function resize(){const el=$('stage');camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();renderer.setSize(el.clientWidth,el.clientHeight)}
+  function animate(){requestAnimationFrame(animate);group.rotation.y+=(targetRotY-group.rotation.y)*.05;group.rotation.x+=(targetRotX-group.rotation.x)*.05;tiles.forEach((t,i)=>{const wave=Math.sin(performance.now()/700+i*.55)*.035;t.position.y=t.userData.baseY+wave});renderer.render(scene,camera)}
+  function movePawn(idx,instant=false){if(!tiles.length)return;const t=tiles[Math.min(idx,tiles.length-1)],dest=new THREE.Vector3(t.position.x,1,t.position.z);if(instant){pawn.position.copy(dest);return}const start=pawn.position.clone(),begin=performance.now();function step(now){const q=Math.min(1,(now-begin)/420),e=1-Math.pow(1-q,3);pawn.position.lerpVectors(start,dest,e);pawn.position.y+=Math.sin(q*Math.PI)*1.7;if(q<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
+  function animateBoard(){targetRotY-=.35;tiles.forEach((t,i)=>{if(i%3===0)t.userData.baseY=.22;setTimeout(()=>t.userData.baseY=0,420)})}
+  function phaseShift(){if(state.turn%3===0){targetRotY-=.6;targetRotX=.62+Math.random()*.18;tiles.forEach((t,i)=>{if((i+state.turn)%4===0)t.userData.baseY=.5;setTimeout(()=>t.userData.baseY=0,700)})}}
+  function bindControls(){let drag=false,lastX=0,lastY=0;const c=renderer.domElement;c.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;c.setPointerCapture(e.pointerId)});c.addEventListener('pointermove',e=>{if(!drag)return;targetRotY+=(e.clientX-lastX)*.008;targetRotX=clamp(targetRotX+(e.clientY-lastY)*.006,.28,1.2);lastX=e.clientX;lastY=e.clientY});c.addEventListener('pointerup',()=>drag=false);c.addEventListener('wheel',e=>{camera.position.z=clamp(camera.position.z+e.deltaY*.01,10,28);camera.position.y=clamp(camera.position.y+e.deltaY*.004,7,20)},{passive:true})}
+
+  $('startBtn').onclick=startGame;$('rollBtn').onclick=roll;$('restartBtn').onclick=()=>location.reload();$('closeEndBtn').onclick=()=>$('endModal').style.display='none';
+  $('viewBtn').onclick=()=>{targetRotY=-.55;targetRotX=.72;camera.position.set(0,13,18)};
+  $('rulesBtn').onclick=()=>alert('Goal: survive 12 life stages while balancing money, stability, health, social capital, stress, and opportunity. Every turn you roll, move, and face a scenario. Identity affects exposure to structural barriers in selected events; it never changes intelligence, morality, effort, or inherent ability. There is no single “winner”: compare timelines across different characters to see how systems, networks, luck, and choices compound.');
+  init3D();render();
+})();
+</script>
+</body>
+</html>
