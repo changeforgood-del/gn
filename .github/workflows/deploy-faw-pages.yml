@@ -31,14 +31,14 @@ jobs:
         run: |
           mkdir -p _site
           cp -R faw-2026 _site/faw-2026
-          cp faw-2026/annual.html _site/faw-2026/index.html
+          cp faw-2026/elite.html _site/faw-2026/index.html
           cp -R reentry-housing _site/reentry-housing
           cp reentry-housing/stop-autopilot.html _site/reentry-housing/index.html
           cat > _site/index.html <<'EOF'
           <!doctype html>
           <html lang="en">
           <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Change For Good Apps</title><style>body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:720px;margin:40px auto;padding:20px;background:#f5f7fa;color:#182230}h1{margin-bottom:8px}.card{display:block;background:white;border:1px solid #d8e0ea;border-radius:16px;padding:18px;margin:14px 0;text-decoration:none;color:inherit}.card b{font-size:1.1rem}.card span{display:block;color:#667085;margin-top:5px}</style></head>
-          <body><h1>Change For Good Apps</h1><p>Select an app.</p><a class="card" href="./reentry-housing/"><b>WestCare STOP Housing Autopilot</b><span>Minimal intake, note analysis, STOP housing plan, regional search, outcomes, data quality and exports.</span></a><a class="card" href="./reentry-housing/mapbox-3d.html"><b>3D Housing Area Viewer</b><span>Mapbox 3D housing and neighborhood viewer.</span></a><a class="card" href="./faw-2026/"><b>Fresno AIDS Walk Annual Sponsorship Planner</b><span>Year-to-year sponsor tracking, calendar, committee roster, contacts, response analytics and outreach forecasting.</span></a></body></html>
+          <body><h1>Change For Good Apps</h1><p>Select an app.</p><a class="card" href="./reentry-housing/"><b>WestCare STOP Housing Autopilot</b><span>Housing navigation, regional search, outcomes and data quality.</span></a><a class="card" href="./reentry-housing/mapbox-3d.html"><b>3D Housing Area Viewer</b><span>3D housing and neighborhood viewer.</span></a><a class="card" href="./faw-2026/"><b>Fresno AIDS Walk Sponsorship Intelligence</b><span>Annual sponsorship CRM, clickable drilldowns, 3D data lab, contact research, committee ownership, forecasting and full exports.</span></a></body></html>
           EOF
 
       - name: Upload apps
