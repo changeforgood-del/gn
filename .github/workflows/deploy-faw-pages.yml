@@ -37,12 +37,13 @@ jobs:
           p = Path('_site/faw-2026/index.html')
           master = Path('_site/faw-2026/master-data.js').read_text()
           s = p.read_text()
+          s = s.replace("if(!f)return,r=new FileReader();", "if(!f)return;const r=new FileReader();")
           marker = '<script>\n' + master + '\n</script>\n'
           head, sep, tail = s.rpartition('</body>')
           if not sep:
               raise RuntimeError('Final </body> tag not found')
           s = head + marker + sep + tail
-          s = s.replace('<head>', '<head>\n<meta name="faw-data-build" content="2026-08-31-full-master-v3">', 1)
+          s = s.replace('<head>', '<head>\n<meta name="faw-data-build" content="2026-08-31-full-master-v4">', 1)
           p.write_text(s)
           PY
           cp -R reentry-housing _site/reentry-housing
