@@ -1,5 +1,5 @@
 (function(){
-  const RESTORE_KEY='fawFullMasterRestoreV2';
+  const RESTORE_KEY='fawFullMasterRestoreV3';
   if(typeof db==='undefined'||typeof enrich!=='function'||!db.campaigns)return;
   if(!db.campaigns[2026]) db.campaigns[2026]=newCampaign(2026,null);
   const c=db.campaigns[2026];
@@ -49,7 +49,7 @@
     {id:'sunmaid',org:'Sun-Maid',worker:'Ricky / research',owner:'Arturo Zuno',status:'Research Needed',sector:'Food / Agriculture',strength:'New',probability:25,address:'Sun-Maid, Kingsburg, CA',last:'Listed in research backlog.',next:'Use verified Corporate Affairs contact route.'},
     {id:'apple',org:'Apple Inc.',worker:'Ricky / research',owner:'Ashley Morris',status:'Research Needed',sector:'Technology',strength:'New',probability:15,address:'Apple, Fresno, CA',ask:'Find the correct corporate/community giving route before outreach.',last:'Listed in research backlog.',next:'Find correct corporate/community giving route.'},
     {id:'dbh',org:'Fresno County Department of Behavioral Health',worker:'Ricky / research',owner:'Ashley Morris',status:'Research Needed',sector:'Government / Behavioral Health',strength:'New',probability:10,address:'Fresno County Department of Behavioral Health, Fresno, CA',last:'Listed in research backlog.',next:'Use verified department contact and ask whether partnership/promotion is permissible.'},
-    {id:'eoc',org:'Fresno EOC',worker:'Emily / research',owner:'Ashley Morris',status:'Research Needed',sector:'Community Action',strength:'Established',probability:10,address:'Fresno EOC, Fresno, CA',ask:'When the route reopens, ask to renew or increase prior support.',last:'Prior support includes 2024 $1,000.',next:'Recheck the official sponsorship page for reopening.',notes:'High-priority prior supporter.'},
+    {id:'eoc',org:'Fresno EOC',worker:'Emily / research',owner:'Ashley Morris',status:'Research Needed',sector:'Community Action',strength:'Established',probability:0,address:'Fresno EOC, Fresno, CA',ask:'When sponsorship requests reopen, explain alignment with Fresno EOC strategic goals and Fresno County service, then ask to renew or increase prior support.',last:'Official Fresno EOC sponsorship page states that sponsorship requests are currently not being accepted.',next:'Do not submit or count as contacted. Recheck the official page for reopening; any future request must be submitted at least 45 days before the event.',notes:'Unavailable for sponsorship at this time; this is not a decline. Eligibility: work must align with Fresno EOC strategic goals, serve Fresno County, and be limited to one request per organization per year. Fresno EOC must be recognized as a sponsor and brand materials coordinated with pr@fresnoeoc.org. Prior support includes 2024 $1,000.',researchStatus:'Verified — sponsorship requests currently closed',researchedAt:'2026-09-01',sourceUrl:'https://fresnoeoc.org/sponsorship-request/'},
     {id:'genoa',org:'Genoa Healthcare',worker:'Ricky / research',owner:'Ashley Morris',status:'Research Needed',sector:'Healthcare / Pharmacy',strength:'New',probability:25,address:'Genoa Healthcare, Fresno, CA',last:'Listed in research backlog.',next:'Use verified marketing route and request appropriate sponsorship/community-giving contact.'},
     {id:'iheartradio',org:'iHeartMedia Fresno',worker:'Ricky / research',owner:'Ashley Morris',status:'Research Needed',sector:'Media',strength:'New',probability:25,address:'iHeartMedia Fresno, Fresno, CA',ask:'Ask for an in-kind media partnership: PSA spots, digital promotion, interviews or event mentions.',last:'Listed as media partner opportunity.',next:'Use verified Fresno advertising/community route.'}
   ];
@@ -65,7 +65,8 @@
     {id:'restore-aug26',date:'2026-08-26',type:'Outreach',title:'Additional outreach',owner:'Terrance',notes:'Centro La Familia email and Modesto Roadsters donation request documented.'},
     {id:'restore-aug30',date:'2026-08-30',type:'Response',title:'Trader Joe’s + Beneficial State Bank',owner:'Terrance',notes:'Trader Joe’s manager agreed to a $40 gift card in October. Beneficial State Bank sponsorship application submitted.'},
     {id:'restore-aug31',date:'2026-08-31',type:'Response',title:'Oakmont + PPMM + CVS updates',owner:'Terrance',notes:'Oakmont confirmed $250; PPMM followed up about attendance/representation; CVS remains under internal compliance and approval review.'},
-    {id:'restore-sep01-idc',date:'2026-09-01',type:'Response',title:'IDC interested — packet and payment options sent',owner:'Ashley Morris',notes:'Christopher expressed interest in sponsoring. Ashley sent the sponsorship packet and explained payment by mailed form/check or through a team on FresnoAIDSWalk.org. Awaiting form/payment; not yet confirmed.'}
+    {id:'restore-sep01-idc',date:'2026-09-01',type:'Response',title:'IDC interested — packet and payment options sent',owner:'Ashley Morris',notes:'Christopher expressed interest in sponsoring. Ashley sent the sponsorship packet and explained payment by mailed form/check or through a team on FresnoAIDSWalk.org. Awaiting form/payment; not yet confirmed.'},
+    {id:'restore-sep01-eoc',date:'2026-09-01',type:'Research',title:'Fresno EOC sponsorship route verified closed',owner:'Ashley Morris',notes:'Official page says Fresno EOC is currently not accepting sponsorship requests. Do not submit or count as contacted; recheck for reopening. Future requests require at least 45 days lead time.'}
   ];
 
   const map=new Map((c.sponsors||[]).map(x=>[x.id,enrich(x)]));
@@ -78,9 +79,10 @@
     if(source.worker&&!out.worker)out.worker=source.worker;
     return enrich(out);
   }
+  const authoritativeIds=new Set(['eoc']);
   legacy.forEach(r=>{
     const old=map.get(r.id);
-    map.set(r.id,old?fillMissing(old,r):enrich(r));
+    map.set(r.id,old?(authoritativeIds.has(r.id)?enrich({...old,...r}):fillMissing(old,r)):enrich(r));
   });
   c.sponsors=[...map.values()].filter(x=>x.id!=='downing');
   c.calendar=c.calendar||[];
@@ -88,7 +90,7 @@
   timeline.forEach(x=>{if(!calIds.has(x.id))c.calendar.push(x)});
   c.activity=c.activity||[];
   if(!localStorage.getItem(RESTORE_KEY)){
-    c.activity.unshift({at:new Date().toISOString(),summary:'Added IDC / Christopher as interested with the sponsorship packet and payment options sent; awaiting form/payment.',source:'Sept. 1, 2026 update from Ashley Morris. IDC is not counted as confirmed. Downing Mountain Lodge remains intentionally excluded.'});
+    c.activity.unshift({at:new Date().toISOString(),summary:'Verified that Fresno EOC is currently not accepting sponsorship requests; kept it out of contacted, submitted and declined counts.',source:'Official Fresno EOC sponsorship page provided Sept. 1, 2026. Future requests require at least 45 days lead time.'});
     localStorage.setItem(RESTORE_KEY,'1');
   }
   save();

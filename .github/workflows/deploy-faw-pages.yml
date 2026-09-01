@@ -43,7 +43,7 @@ jobs:
           if not sep:
               raise RuntimeError('Final </body> tag not found')
           s = head + marker + sep + tail
-          s = s.replace('<head>', '<head>\n<meta name="faw-data-build" content="2026-09-01-full-master-v7-idc">', 1)
+          s = s.replace('<head>', '<head>\n<meta name="faw-data-build" content="2026-09-01-full-master-v8-eoc-closed">', 1)
           p.write_text(s)
           PY
           cp -R reentry-housing _site/reentry-housing
