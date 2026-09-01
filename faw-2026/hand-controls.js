@@ -46,41 +46,52 @@
   function clickTarget(){if(!state.hover)return;const label=labelOf(state.hover);state.hover.click();logEvent('click',{label});actionEl.textContent=`Opened ${label}`}
   function closeOrBack(){const close=document.querySelector('.drawer.open .close,.modal.open .close,.drawer.open [data-close],.modal.open [data-close]');if(close){const l=labelOf(close)||'panel';close.click();logEvent('close',{label:l});actionEl.textContent='Closed panel';return}const active=document.querySelector('#nav button.active,[data-section].active');const overview=[...document.querySelectorAll('#nav button,[data-section]')].find(x=>/overview/i.test(labelOf(x)));if(overview&&active!==overview){overview.click();logEvent('close',{label:'Return to Overview'});actionEl.textContent='Returned to Overview'}}
   function nextSection(){const nav=[...document.querySelectorAll('#nav button,[data-section]')].filter(x=>x.offsetParent!==null);if(!nav.length)return;let i=nav.findIndex(x=>x.classList.contains('active'));if(i<0)i=0;i=(i+1)%nav.length;const l=labelOf(nav[i]);nav[i].click();logEvent('section',{label:l});actionEl.textContent=`Section: ${l}`}
-  function resetPair(){state.activePair=null;state.pairStart=0;state.dragged=false;Object.values(dots).forEach(d=>d.classList.remove('active'))}
+  function clearPairVisuals(){Object.values(dots).forEach(d=>d.classList.remove('active'))}
+  function finishPair(){
+    if(!state.activePair)return;
+    const pair=state.activePair,held=performance.now()-state.pairStart,wasDragged=state.dragged;
+    if(pair==='index'&&!wasDragged&&held>110&&held<900)clickTarget();
+    logEvent('pinch-release',{finger:pair,dragged:wasDragged,held:Math.round(held)});
+    state.activePair=null;state.pairStart=0;state.dragged=false;clearPairVisuals();
+  }
+  function beginPair(chosen,screen){
+    state.activePair=chosen;state.pairStart=performance.now();state.startY=screen[chosen].y;state.lastY=screen[chosen].y;state.startX=screen[chosen].x;state.lastX=screen[chosen].x;state.dragged=false;dots[chosen].classList.add('active');dots.thumb.classList.add('active');logEvent('pinch-start',{finger:chosen});
+  }
 
   function onResults(results){
     if(!state.running)return;const lm=results.multiHandLandmarks?.[0];
-    if(!lm){Object.values(dots).forEach(d=>d.style.display='none');gestureEl.textContent='No hand';targetEl.textContent='None';setHover(null);resetPair();return}
+    if(!lm){Object.values(dots).forEach(d=>d.style.display='none');gestureEl.textContent='No hand';targetEl.textContent='None';setHover(null);finishPair();return}
     const tips={thumb:lm[4],index:lm[8],middle:lm[12],ring:lm[16],pinky:lm[20]};
-    const wrap=video.getBoundingClientRect();
     Object.entries(tips).forEach(([k,p])=>{const d=dots[k];d.style.display='grid';d.style.left=((1-p.x)*100)+'%';d.style.top=(p.y*100)+'%';d.classList.remove('snap');const sx=(1-p.x)*innerWidth,sy=p.y*innerHeight;if(nearest(sx,sy,75))d.classList.add('snap')});
     const screen={};Object.entries(tips).forEach(([k,p])=>screen[k]={x:(1-p.x)*innerWidth,y:p.y*innerHeight});
-    const pairs=[['index','I',dist(tips.thumb,tips.index)],['middle','M',dist(tips.thumb,tips.middle)],['ring','R',dist(tips.thumb,tips.ring)],['pinky','P',dist(tips.thumb,tips.pinky)]];
-    pairs.sort((a,b)=>a[2]-b[2]);const chosen=pairs[0][2]<0.052?pairs[0][0]:null;
-    if(chosen!==state.activePair){resetPair();if(chosen){state.activePair=chosen;state.pairStart=performance.now();state.startY=screen[chosen].y;state.lastY=screen[chosen].y;state.startX=screen[chosen].x;state.lastX=screen[chosen].x;dots[chosen].classList.add('active');dots.thumb.classList.add('active');logEvent('pinch-start',{finger:chosen})}}
-    const point=screen[state.activePair||'index'];setHover(nearest(point.x,point.y,state.activePair==='index'?105:80));
+    const pairs=[['index',dist(tips.thumb,tips.index)],['middle',dist(tips.thumb,tips.middle)],['ring',dist(tips.thumb,tips.ring)],['pinky',dist(tips.thumb,tips.pinky)]].sort((a,b)=>a[1]-b[1]);
+    const chosen=pairs[0][1]<0.052?pairs[0][0]:null;
 
-    if(state.activePair==='index'){
-      const dy=screen.index.y-state.lastY,dx=screen.index.x-state.lastX;const total=Math.hypot(screen.index.x-state.startX,screen.index.y-state.startY);if(total>11)state.dragged=true;
+    if(!chosen&&state.activePair)finishPair();
+    if(chosen&&chosen!==state.activePair){if(state.activePair)finishPair();beginPair(chosen,screen)}
+
+    const active=state.activePair;
+    const point=screen[active||'index'];setHover(nearest(point.x,point.y,active==='index'?105:80));
+
+    if(active==='index'){
+      const dy=screen.index.y-state.lastY,total=Math.hypot(screen.index.x-state.startX,screen.index.y-state.startY);if(total>11)state.dragged=true;
       if(state.dragged&&Math.abs(dy)>1.5){window.scrollBy({top:-dy*1.12,left:0,behavior:'auto'});actionEl.textContent='Grabbing page';gestureEl.textContent='Thumb + index — drag';if(Date.now()-state.lastAction>180){state.lastAction=Date.now();logEvent('drag-scroll',{delta:Math.round(-dy)})}}
       else{gestureEl.textContent='Thumb + index — hold/click';actionEl.textContent='Hold still, then release to click'}
       state.lastY=screen.index.y;state.lastX=screen.index.x;
-    }else if(state.activePair==='middle'){
+    }else if(active==='middle'){
       const dy=screen.middle.y-state.lastY;if(Math.abs(dy)>1.2)window.scrollBy({top:-dy*.55,left:0,behavior:'auto'});state.lastY=screen.middle.y;gestureEl.textContent='Thumb + middle — fine scroll';actionEl.textContent='Fine scrolling';
-    }else if(state.activePair==='ring'){
+    }else if(active==='ring'){
       gestureEl.textContent='Thumb + ring — close/back';if(performance.now()-state.pairStart>170&&Date.now()-state.lastAction>700){state.lastAction=Date.now();closeOrBack()}
-    }else if(state.activePair==='pinky'){
+    }else if(active==='pinky'){
       gestureEl.textContent='Thumb + pinky — next section';if(performance.now()-state.pairStart>170&&Date.now()-state.lastAction>800){state.lastAction=Date.now();nextSection()}
     }else{
       gestureEl.textContent='Pointing';actionEl.textContent='Move any fingertip near a control';
       const twoUp=lm[8].y<lm[6].y&&lm[12].y<lm[10].y&&lm[16].y>lm[14].y&&lm[20].y>lm[18].y;const cube=document.querySelector('#cubeCanvas,.cube-wrap canvas');if(twoUp&&cube){const p=screen.index,r=cube.getBoundingClientRect();cube.dispatchEvent(new PointerEvent('pointermove',{clientX:clamp(p.x,r.left,r.right),clientY:clamp(p.y,r.top,r.bottom),bubbles:true,pointerId:88,pointerType:'pen',buttons:1}));gestureEl.textContent='Two fingers — 3D move';actionEl.textContent='Moving 3D view'}
     }
-
-    if(!chosen&&state.activePair){const held=performance.now()-state.pairStart;if(state.activePair==='index'&&!state.dragged&&held>110&&held<900){clickTarget()}logEvent('pinch-release',{finger:state.activePair,dragged:state.dragged,held:Math.round(held)});resetPair()}
   }
 
   async function frame(){if(!state.running||!state.hands)return;try{if(video.readyState>=2)await state.hands.send({image:video})}catch(e){}state.raf=requestAnimationFrame(frame)}
   async function start(){if(state.running||state.loading)return;state.loading=true;button.disabled=true;button.textContent='Loading…';panel.classList.add('on');try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('Camera not supported');await loadScript(`${CDN}/hands.js`);state.hands=new Hands({locateFile:file=>`${CDN}/${file}`});state.hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.65,minTrackingConfidence:.6});state.hands.onResults(onResults);state.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});video.srcObject=state.stream;await video.play();state.running=true;state.loading=false;button.disabled=false;button.textContent='✋ Hand Control ON';gestureEl.textContent='Show your hand';actionEl.textContent='Ready';logEvent('camera-start');frame()}catch(e){state.loading=false;button.disabled=false;button.textContent='✋ Hand Control';gestureEl.textContent='Camera error';actionEl.textContent=e.message||'Could not start camera'}}
-  function stop(){state.running=false;state.loading=false;if(state.raf)cancelAnimationFrame(state.raf);if(state.stream)state.stream.getTracks().forEach(t=>t.stop());state.stream=null;video.srcObject=null;Object.values(dots).forEach(d=>d.style.display='none');setHover(null);resetPair();panel.classList.remove('on');button.disabled=false;button.textContent='✋ Hand Control';logEvent('camera-stop')}
+  function stop(){state.running=false;state.loading=false;if(state.raf)cancelAnimationFrame(state.raf);if(state.stream)state.stream.getTracks().forEach(t=>t.stop());state.stream=null;video.srcObject=null;Object.values(dots).forEach(d=>d.style.display='none');setHover(null);finishPair();panel.classList.remove('on');button.disabled=false;button.textContent='✋ Hand Control';logEvent('camera-stop')}
   button.addEventListener('click',()=>state.running?stop():start());stopBtn.addEventListener('click',stop);centerBtn.addEventListener('click',()=>{window.scrollTo({top:0,behavior:'smooth'});actionEl.textContent='View reset';logEvent('reset-view')});window.addEventListener('pagehide',stop,{once:true});
 })();
