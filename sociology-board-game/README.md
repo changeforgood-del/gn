@@ -8,6 +8,12 @@ GitHub Pages path:
 
 `https://changeforgood-del.github.io/gn/sociology-board-game/`
 
+## Visible city board and multiplayer
+
+- The board is built into the page, so it remains visible even when external 3D libraries fail to load.
+- The 36-space city shows under-resourced, working-class, middle-income, and wealthy districts with distinct buildings and colors.
+- Supports 1–4 local pass-and-play players, each with a colored moving piece, individual stats, position, turn count, and timeline.
+
 ## Core design
 
 Players create a social location using:
