@@ -28,4 +28,4 @@ If GitHub Pages is enabled for this repository, the app can be served as a stati
 The source project files contain workflow queue counts that overlap. Email, call, research and application counts should not be summed as a unique sponsor total.
 
 ## Current data baseline
-The app includes documented sponsorship work through August 26, 2026 and can be updated directly in the browser. Browser changes are stored in localStorage on the device, so use **Export JSON** for backups and **Import JSON** to restore or move the tracker to another device.
+The app includes documented sponsorship work through September 1, 2026 and can be updated directly in the browser. Browser changes are stored in localStorage on the device, so use **Export JSON** for backups and **Import JSON** to restore or move the tracker to another device.

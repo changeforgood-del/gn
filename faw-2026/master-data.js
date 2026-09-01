@@ -1,5 +1,5 @@
 (function(){
-  const RESTORE_KEY='fawFullMasterRestoreV1';
+  const RESTORE_KEY='fawFullMasterRestoreV2';
   if(typeof db==='undefined'||typeof enrich!=='function'||!db.campaigns)return;
   if(!db.campaigns[2026]) db.campaigns[2026]=newCampaign(2026,null);
   const c=db.campaigns[2026];
@@ -13,6 +13,7 @@
     {id:'beneficial',org:'Beneficial State Bank',worker:'Terrance',owner:'Terrance',status:'Submitted',method:'Online application',address:'Beneficial State Bank, Fresno, CA',last:'Sponsorship application submitted Aug. 30, 2026.',next:'Await response and record decision or follow-up request.',notes:'Submitted / awaiting response.'},
     {id:'gwl',org:'Great Wolf Lodge — Southern California',worker:'Terrance',owner:'Andrea Gonzalez',status:'Submitted',method:'Online application',address:'Great Wolf Lodge Southern California, Garden Grove, CA',last:'Donation request submitted Aug. 25, 2026; auto-acknowledgement received.',next:'Track review outcome.',notes:'Review may take up to 30 days.'},
     {id:'ppm',org:'Planned Parenthood Mar Monte',worker:'Terrance',owner:'Terrance',contact:'Education Services team',email:'edservices@ppmarmonte.org',status:'Active',address:'Planned Parenthood Mar Monte, Fresno, CA',last:'Program Interest Form tracked as submitted Aug. 18. On Aug. 31, Education Services said they would like someone to attend and represent PPMM and asked whether the form was completed.',next:'Confirm the Program Interest Form was submitted and coordinate event representation/logistics.',notes:'Active follow-up; not yet counted as confirmed monetary sponsorship.'},
+    {id:'idc',org:'IDC',worker:'Ashley Morris',owner:'Ashley Morris',contact:'Christopher',status:'Active',sector:'Community partner',strength:'Warm',probability:55,method:'Email',sentDate:'2026-09-01',responseDate:'2026-09-01',address:'Fresno, CA',ask:'Invite IDC to select the sponsorship level that works best and complete payment by mailed form/check or through a team on FresnoAIDSWalk.org.',last:'Christopher expressed interest in sponsoring. Ashley Morris sent the sponsorship packet and explained mail/check and online team-donation payment options on Sept. 1, 2026.',next:'Await the completed sponsorship form and payment; assist Christopher with either option if needed.',notes:'Interested / awaiting form or payment. Do not count as confirmed until the form/payment is received.'},
     {id:'cvs',org:'CVS Specialty / CVS Health',worker:'Terrance',owner:'Terrance',contact:'Drexel Shaw, MPH',contactRole:'Senior Manager, National Patient Advocacy and External Affairs',phone:'445-227-4240',status:'Waiting',address:'CVS, Fresno, CA',last:'Sponsorship remains under internal compliance and approval review; Drexel Shaw will follow up after a final decision.',next:'Do not over-contact; courteous follow-up only if no decision arrives after the review window.',notes:'Latest status from the Aug. 31 user-provided CVS email.'},
     {id:'tinder',org:'Tinder',worker:'Terrance',owner:'Terrance',contact:'Partnerships',email:'partners@gotinder.com',status:'Waiting',sector:'Technology / Dating',strength:'New',probability:25,method:'Email',address:'Tinder, Los Angeles, CA',ask:'Request event sponsorship or partnership aligned with LGBTQ+ community visibility and HIV awareness.',last:'Sponsorship email sent Aug. 18, 2026.',next:'Await response / follow up if appropriate.'},
     {id:'gilead',org:'Gilead',worker:'Ashley',owner:'Ashley Morris',status:'Waiting',address:'Gilead Sciences, Foster City, CA',last:'Ashley reached out Aug. 20 and LOI was sent.',next:'Await response and document decision.'},
@@ -63,7 +64,8 @@
     {id:'restore-gwl',date:'2026-08-25',type:'Outreach',title:'Great Wolf submitted',owner:'Terrance',notes:'ApproveForGood donation request submitted.'},
     {id:'restore-aug26',date:'2026-08-26',type:'Outreach',title:'Additional outreach',owner:'Terrance',notes:'Centro La Familia email and Modesto Roadsters donation request documented.'},
     {id:'restore-aug30',date:'2026-08-30',type:'Response',title:'Trader Joe’s + Beneficial State Bank',owner:'Terrance',notes:'Trader Joe’s manager agreed to a $40 gift card in October. Beneficial State Bank sponsorship application submitted.'},
-    {id:'restore-aug31',date:'2026-08-31',type:'Response',title:'Oakmont + PPMM + CVS updates',owner:'Terrance',notes:'Oakmont confirmed $250; PPMM followed up about attendance/representation; CVS remains under internal compliance and approval review.'}
+    {id:'restore-aug31',date:'2026-08-31',type:'Response',title:'Oakmont + PPMM + CVS updates',owner:'Terrance',notes:'Oakmont confirmed $250; PPMM followed up about attendance/representation; CVS remains under internal compliance and approval review.'},
+    {id:'restore-sep01-idc',date:'2026-09-01',type:'Response',title:'IDC interested — packet and payment options sent',owner:'Ashley Morris',notes:'Christopher expressed interest in sponsoring. Ashley sent the sponsorship packet and explained payment by mailed form/check or through a team on FresnoAIDSWalk.org. Awaiting form/payment; not yet confirmed.'}
   ];
 
   const map=new Map((c.sponsors||[]).map(x=>[x.id,enrich(x)]));
@@ -86,7 +88,7 @@
   timeline.forEach(x=>{if(!calIds.has(x.id))c.calendar.push(x)});
   c.activity=c.activity||[];
   if(!localStorage.getItem(RESTORE_KEY)){
-    c.activity.unshift({at:new Date().toISOString(),summary:'Restored the full 2026 FAW master sponsor list and historical campaign timeline into the professional Sponsorship Intelligence app.',source:'Merged from the prior 2026 FAW master tracker; Downing Mountain Lodge remains intentionally excluded.'});
+    c.activity.unshift({at:new Date().toISOString(),summary:'Added IDC / Christopher as interested with the sponsorship packet and payment options sent; awaiting form/payment.',source:'Sept. 1, 2026 update from Ashley Morris. IDC is not counted as confirmed. Downing Mountain Lodge remains intentionally excluded.'});
     localStorage.setItem(RESTORE_KEY,'1');
   }
   save();
