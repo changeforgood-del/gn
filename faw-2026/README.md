@@ -16,6 +16,8 @@ Interactive browser-based command center for the 15th Annual Fresno AIDS Walk sp
 - Next actions and follow-up needs
 - Sponsor/contact locations with clickable map view
 - Timeline of sponsorship work
+- Visual pipeline, owner workload and hidden-risk breakdowns
+- Printable next-meeting progress update with assignments and attention items
 - Local record editing in the browser
 - JSON export/import backups
 
