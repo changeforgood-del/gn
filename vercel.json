@@ -1,6 +1,7 @@
 {
   "rewrites": [
-    {"source":"/reentry-housing","destination":"/reentry-housing/index.html"}
+    {"source":"/reentry-housing","destination":"/reentry-housing/index.html"},
+    {"source":"/ballin-to-crawlin","destination":"/ballin-to-crawlin-book/index.html"}
   ],
   "functions": {"api/rewrite.js":{"maxDuration":10}}
 }
