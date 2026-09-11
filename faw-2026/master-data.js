@@ -1,5 +1,5 @@
 (function(){
-  const RESTORE_KEY='fawFullMasterRestoreV3';
+  const RESTORE_KEY='fawFullMasterRestoreV4';
   if(typeof db==='undefined'||typeof enrich!=='function'||!db.campaigns)return;
   if(!db.campaigns[2026]) db.campaigns[2026]=newCampaign(2026,null);
   const c=db.campaigns[2026];
@@ -14,7 +14,7 @@
     {id:'gwl',org:'Great Wolf Lodge — Southern California',worker:'Terrance',owner:'Andrea Gonzalez',status:'Submitted',method:'Online application',address:'Great Wolf Lodge Southern California, Garden Grove, CA',last:'Donation request submitted Aug. 25, 2026; auto-acknowledgement received.',next:'Track review outcome.',notes:'Review may take up to 30 days.'},
     {id:'ppm',org:'Planned Parenthood Mar Monte',worker:'Terrance',owner:'Terrance',contact:'Education Services team',email:'edservices@ppmarmonte.org',status:'Active',address:'Planned Parenthood Mar Monte, Fresno, CA',last:'Program Interest Form tracked as submitted Aug. 18. On Aug. 31, Education Services said they would like someone to attend and represent PPMM and asked whether the form was completed.',next:'Confirm the Program Interest Form was submitted and coordinate event representation/logistics.',notes:'Active follow-up; not yet counted as confirmed monetary sponsorship.'},
     {id:'idc',org:'IDC',worker:'Ashley Morris',owner:'Ashley Morris',contact:'Christopher',status:'Active',sector:'Community partner',strength:'Warm',probability:55,method:'Email',sentDate:'2026-09-01',responseDate:'2026-09-01',address:'Fresno, CA',ask:'Invite IDC to select the sponsorship level that works best and complete payment by mailed form/check or through a team on FresnoAIDSWalk.org.',last:'Christopher expressed interest in sponsoring. Ashley Morris sent the sponsorship packet and explained mail/check and online team-donation payment options on Sept. 1, 2026.',next:'Await the completed sponsorship form and payment; assist Christopher with either option if needed.',notes:'Interested / awaiting form or payment. Do not count as confirmed until the form/payment is received.'},
-    {id:'cvs',org:'CVS Specialty / CVS Health',worker:'Terrance',owner:'Terrance',contact:'Drexel Shaw, MPH',contactRole:'Senior Manager, National Patient Advocacy and External Affairs',phone:'445-227-4240',status:'Waiting',address:'CVS, Fresno, CA',last:'Sponsorship remains under internal compliance and approval review; Drexel Shaw will follow up after a final decision.',next:'Do not over-contact; courteous follow-up only if no decision arrives after the review window.',notes:'Latest status from the Aug. 31 user-provided CVS email.'},
+    {id:'cvs',org:'CVS Health / CVS Specialty',worker:'Terrance',owner:'Terrance',contact:'Drexel Shaw, MPH',contactRole:'Senior Manager, National Patient Advocacy and External Affairs',email:'Drexel.Shaw@CVSHealth.com',phone:'445-227-4240',status:'Confirmed',value:2500,valueType:'Cash',tier:'Supporting Sponsor',payment:'Confirmed',logo:'Requested',probability:100,address:'CVS, Fresno, CA',last:'Payment confirmation received Sept. 10, 2026 for a $2,500 Supporting Sponsorship.',next:'Receive the CVS Health logo by Sept. 18; coordinate optional giveaways and two complimentary shirts.',notes:'Confirmed Supporting Sponsor. Includes T-shirt and program recognition, press release acknowledgment, homepage link, social promotion, waived vendor fee, giveaway opportunity, and two complimentary shirts.'},
     {id:'tinder',org:'Tinder',worker:'Terrance',owner:'Terrance',contact:'Partnerships',email:'partners@gotinder.com',status:'Waiting',sector:'Technology / Dating',strength:'New',probability:25,method:'Email',address:'Tinder, Los Angeles, CA',ask:'Request event sponsorship or partnership aligned with LGBTQ+ community visibility and HIV awareness.',last:'Sponsorship email sent Aug. 18, 2026.',next:'Await response / follow up if appropriate.'},
     {id:'gilead',org:'Gilead',worker:'Ashley',owner:'Ashley Morris',status:'Waiting',address:'Gilead Sciences, Foster City, CA',last:'Ashley reached out Aug. 20 and LOI was sent.',next:'Await response and document decision.'},
     {id:'healthmerch',org:'HealthMerch',worker:'Terrance / Brisa',owner:'Terrance',contact:'Benjamin Sherman / Ashley',status:'Active',sector:'Merchandise / Event Production',strength:'Warm',probability:60,valueType:'In-kind',address:'HealthMerch, Fresno, CA',ask:'Ask for the strongest event-shirt discount or in-kind production contribution and document the dollar value saved.',last:'Positive response; discounted shirt production discussed as in-kind support.',next:'Finalize quote and document in-kind value.'},
@@ -66,7 +66,8 @@
     {id:'restore-aug30',date:'2026-08-30',type:'Response',title:'Trader Joe’s + Beneficial State Bank',owner:'Terrance',notes:'Trader Joe’s manager agreed to a $40 gift card in October. Beneficial State Bank sponsorship application submitted.'},
     {id:'restore-aug31',date:'2026-08-31',type:'Response',title:'Oakmont + PPMM + CVS updates',owner:'Terrance',notes:'Oakmont confirmed $250; PPMM followed up about attendance/representation; CVS remains under internal compliance and approval review.'},
     {id:'restore-sep01-idc',date:'2026-09-01',type:'Response',title:'IDC interested — packet and payment options sent',owner:'Ashley Morris',notes:'Christopher expressed interest in sponsoring. Ashley sent the sponsorship packet and explained payment by mailed form/check or through a team on FresnoAIDSWalk.org. Awaiting form/payment; not yet confirmed.'},
-    {id:'restore-sep01-eoc',date:'2026-09-01',type:'Research',title:'Fresno EOC sponsorship route verified closed',owner:'Ashley Morris',notes:'Official page says Fresno EOC is currently not accepting sponsorship requests. Do not submit or count as contacted; recheck for reopening. Future requests require at least 45 days lead time.'}
+    {id:'restore-sep01-eoc',date:'2026-09-01',type:'Research',title:'Fresno EOC sponsorship route verified closed',owner:'Ashley Morris',notes:'Official page says Fresno EOC is currently not accepting sponsorship requests. Do not submit or count as contacted; recheck for reopening. Future requests require at least 45 days lead time.'},
+    {id:'restore-sep10-cvs',date:'2026-09-10',type:'Response',title:'CVS Health confirmed at $2,500',owner:'Terrance',notes:'Payment confirmation received. CVS Health is a Supporting Sponsor; logo is needed by Sept. 18. Confirmed cash total is now $3,750 before Imperial Dove Court’s amount.'}
   ];
 
   const map=new Map((c.sponsors||[]).map(x=>[x.id,enrich(x)]));
@@ -79,7 +80,7 @@
     if(source.worker&&!out.worker)out.worker=source.worker;
     return enrich(out);
   }
-  const authoritativeIds=new Set(['eoc']);
+  const authoritativeIds=new Set(['eoc','cvs']);
   legacy.forEach(r=>{
     const old=map.get(r.id);
     map.set(r.id,old?(authoritativeIds.has(r.id)?enrich({...old,...r}):fillMissing(old,r)):enrich(r));
