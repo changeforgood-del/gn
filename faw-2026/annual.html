@@ -3,8 +3,8 @@
 (function(){
   const file=(location.pathname.split('/').pop()||'index.html');
   const base=file.replace(/\.html$/,'-base.html');
-  fetch(base+'?v=20260916').then(r=>{if(!r.ok)throw new Error('Unable to load '+base);return r.text()}).then(html=>{
-    const patch='<script src="homewood-update.js?v=20260916"></'+'script>';
+  fetch(base+'?v=20260917').then(r=>{if(!r.ok)throw new Error('Unable to load '+base);return r.text()}).then(html=>{
+    const patch='<script src="homewood-update.js?v=20260916"></'+'script><script src="sponsor-update-20260917.js?v=20260917"></'+'script>';
     const pos=html.toLowerCase().lastIndexOf('</body>');
     html=pos>=0?html.slice(0,pos)+patch+html.slice(pos):html+patch;
     document.open();document.write(html);document.close();
