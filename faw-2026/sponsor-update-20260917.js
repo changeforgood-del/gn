@@ -13,9 +13,9 @@
   const kvprIndex={
     id:'kvpr',org:'KVPR | Valley Public Radio',status:'Confirmed',worker:'Terrance',owner:'Terrance',contact:'Alexa Teal Green — Director of Engagement & Events',comm:'agreen@kvpr.org • 559-862-2471',
     route:'In-kind media sponsorship',value:500,address:'2589 Alluvial Ave, Clovis, CA 93611',
-    last:'KVPR approved $500 in complimentary on-air spots promoting the Fresno AIDS Walk. Spots are planned to begin the week of Oct. 27, 2026 after approval of the proposed media schedule.',
-    next:'Approve the proposed media schedule and provide any final event copy/materials needed for recording.',
-    notes:'Confirmed $500 in-kind Media Sponsor. KVPR: 89.3 Fresno / 89.1 Bakersfield; KVPR Classical: 89.3 HD-2 Fresno.'
+    last:'Sept. 22, 2026: Terrance approved Alexa’s proposed on-air announcement, suggesting “The Living Room, a project of WestCare California” if space allows. KVPR’s acknowledgment and final wording are pending. Spots were planned for the week of Oct. 27.',
+    next:'Await Alexa’s acknowledgment of the approved copy and confirm final on-air wording and broadcast schedule.',
+    notes:'Confirmed $500 in-kind Media Sponsor. Sept. 22: Terrance approved the proposed announcement and suggested “The Living Room, a project of WestCare California” if space allows. Alexa’s acknowledgment and final wording are pending. KVPR: 89.3 Fresno / 89.1 Bakersfield; KVPR Classical: 89.3 HD-2 Fresno.'
   };
 
   try{
@@ -31,6 +31,7 @@
         localStorage.setItem('faw2026Activity',JSON.stringify(activity));
         localStorage.setItem(PATCH_KEY+'-index','1');
       }
+      if(typeof timeline!=='undefined' && Array.isArray(timeline) && !timeline.some(t=>Array.isArray(t)&&/KVPR copy approved/i.test(t.join(' ')))) timeline.push(['2026-09-22','KVPR copy approved','Terrance approved Alexa’s proposed on-air copy, suggesting “The Living Room, a project of WestCare California” if space allows; await acknowledgment and final wording.']);
       if(typeof persist==='function') persist(); else if(typeof renderAll==='function') renderAll();
     }
   }catch(e){console.warn('Sept. 17 sponsor index patch:',e)}
@@ -52,16 +53,17 @@
           id:'kvpr',org:'KVPR | Valley Public Radio',worker:'Terrance',owner:'Terrance',contact:'Alexa Teal Green',contactRole:'Director of Engagement & Events',email:'agreen@kvpr.org',phone:'559-862-2471',status:'Confirmed',
           sector:'Media / Public Radio',strength:'Established',probability:100,method:'Email',tier:'Media Sponsor',
           value:500,valueType:'In-kind',payment:'In-kind media value',address:'2589 Alluvial Ave, Clovis, CA 93611',
-          ask:'Approve the proposed media schedule and provide any approved event copy or materials needed to record the spots.',
-          last:'KVPR confirmed $500 in complimentary on-air spots promoting the Fresno AIDS Walk; spots are planned to begin the week of Oct. 27, 2026 after schedule approval.',
-          next:'Approve the proposed media schedule and provide any final event copy/materials needed for recording.',
-          notes:'Confirmed $500 in-kind media sponsorship. KVPR serves 89.3 Fresno / 89.1 Bakersfield; KVPR Classical airs on 89.3 HD-2 Fresno.'
+          ask:'Await Alexa’s acknowledgment of the approved copy and confirm final on-air wording and broadcast schedule.',
+          last:'Sept. 22, 2026: Terrance approved Alexa’s proposed on-air announcement, suggesting “The Living Room, a project of WestCare California” if space allows. KVPR’s acknowledgment and final wording are pending. Spots were planned for the week of Oct. 27.',
+          next:'Await Alexa’s acknowledgment of the approved copy and confirm final on-air wording and broadcast schedule.',
+          notes:'Confirmed $500 in-kind media sponsorship. Sept. 22: Terrance approved the proposed announcement and suggested “The Living Room, a project of WestCare California” if space allows. Alexa’s acknowledgment and final wording are pending. KVPR serves 89.3 Fresno / 89.1 Bakersfield; KVPR Classical airs on 89.3 HD-2 Fresno.'
         });
         c.sponsors=(c.sponsors||[]).filter(x=>!isIDC(x)&&!isKVPR(x));
         c.sponsors.unshift(kvpr,idc);
         c.calendar=c.calendar||[];
         if(!c.calendar.some(x=>x.id==='idc-check-20260917')) c.calendar.push({id:'idc-check-20260917',date:'2026-09-17',type:'Payment',title:'Imperial Dove Court — $250 check received',owner:'Ashley Morris',notes:'Neighborhood sponsor check received; confirmed cash sponsor.',sponsorId:'idc'});
-        if(!c.calendar.some(x=>x.id==='kvpr-media-20261027')) c.calendar.push({id:'kvpr-media-20261027',date:'2026-10-27',type:'Media',title:'KVPR on-air promotion begins this week',owner:'Terrance',notes:'Complimentary Fresno AIDS Walk spots valued at $500, pending approval of proposed media schedule.',sponsorId:'kvpr'});
+        if(!c.calendar.some(x=>x.id==='kvpr-media-20261027')) c.calendar.push({id:'kvpr-media-20261027',date:'2026-10-27',type:'Media',title:'KVPR on-air promotion begins this week',owner:'Terrance',notes:'Complimentary Fresno AIDS Walk spots valued at $500. Announcement copy approved Sept. 22 with suggested organization wording; confirm final wording and broadcast schedule.',sponsorId:'kvpr'});
+        if(!c.calendar.some(x=>x.id==='kvpr-copy-20260922')) c.calendar.push({id:'kvpr-copy-20260922',date:'2026-09-22',type:'Media',title:'KVPR announcement copy approved',owner:'Terrance',notes:'Suggested “The Living Room, a project of WestCare California” if space allows. Await Alexa’s acknowledgment and final on-air wording.',sponsorId:'kvpr'});
         c.activity=c.activity||[];
         if(!localStorage.getItem(PATCH_KEY+'-db')){
           c.activity.unshift({at:new Date().toISOString(),summary:'Sept. 17: Imperial Dove Court $250 check received; KVPR $500 media sponsorship confirmed.',source:'Sponsor/payment updates supplied Sept. 17, 2026.'});
