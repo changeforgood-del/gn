@@ -11,7 +11,10 @@
     button,select,input{font:inherit} button{cursor:pointer}
     #app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 365px;gap:0}
     #stage{position:relative;min-width:0;overflow:hidden}
-    #three{position:absolute;inset:0}
+    #three{display:none}
+    #cityBoard{position:absolute;inset:88px 22px 58px;display:grid;grid-template-columns:repeat(6,minmax(58px,1fr));grid-template-rows:repeat(6,minmax(58px,1fr));gap:7px;padding:22px;background:#252a31;border:10px solid #111722;border-radius:28px;box-shadow:0 35px 90px #0008,inset 0 0 0 2px #ffffff17;transform:perspective(1100px) rotateX(5deg);transform-origin:center bottom;overflow:hidden}
+    #cityBoard:before,#cityBoard:after{content:"";position:absolute;background:#171b22;z-index:0;pointer-events:none}#cityBoard:before{left:32.5%;top:0;width:9px;height:100%}#cityBoard:after{top:49%;left:0;height:9px;width:100%}
+    .citytile{position:relative;z-index:1;border:2px solid #ffffff24;border-radius:11px;padding:5px;overflow:hidden;box-shadow:0 5px 12px #0005;transition:.3s transform,.3s filter}.citytile.active{transform:translateY(-7px) scale(1.05);filter:brightness(1.35);outline:3px solid #fff}.citytile .num{position:absolute;right:5px;top:3px;font-size:9px;font-weight:900;color:#fff9}.citytile .building{position:absolute;left:9px;bottom:8px;width:45%;height:48%;border-radius:3px 3px 1px 1px;background:#d5d0bf;box-shadow:inset -7px 0 #0002,0 3px 0 #0004}.citytile .building:before{content:"";position:absolute;inset:6px 5px;background:repeating-linear-gradient(90deg,#8fd8ff 0 4px,transparent 4px 8px),repeating-linear-gradient(0deg,transparent 0 7px,#8fd8ff 7px 11px)}.citytile .tree{position:absolute;right:12px;bottom:8px;width:9px;height:22px;background:#60452d}.citytile .tree:after{content:"";position:absolute;width:26px;height:26px;border-radius:50%;background:#56a65e;left:-9px;top:-12px}.district-low{background:linear-gradient(145deg,#7f584f,#443a40)}.district-low .building{height:32%;background:#a79789}.district-working{background:linear-gradient(145deg,#9b7a46,#5a583d)}.district-middle{background:linear-gradient(145deg,#38738a,#35536a)}.district-wealthy{background:linear-gradient(145deg,#3c8d68,#284f55)}.district-wealthy .building{height:66%;background:#efe7cd}.district-wealthy .tree:after{background:#7bd176}.districtlabel{position:absolute;z-index:4;padding:5px 9px;border-radius:999px;background:#080b12d9;border:1px solid #ffffff2b;font-size:10px;font-weight:900;letter-spacing:.08em;pointer-events:none}.label-low{left:28px;bottom:18px}.label-working{left:28px;top:51%}.label-middle{right:28px;bottom:18px}.label-wealthy{right:28px;top:96px}.token{position:absolute;z-index:8;width:25px;height:25px;border-radius:50%;border:3px solid #fff;box-shadow:0 5px 12px #000,0 0 0 3px #0005;display:grid;place-items:center;color:#071018;font-size:10px;font-weight:1000;transition:left .55s cubic-bezier(.2,.8,.2,1),top .55s cubic-bezier(.2,.8,.2,1);transform:translate(-50%,-70%)}
     #topbar{position:absolute;top:14px;left:14px;right:14px;display:flex;gap:10px;justify-content:space-between;align-items:flex-start;pointer-events:none}
     .brand,.roundbox{pointer-events:auto;background:rgba(6,8,15,.72);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:0 18px 40px rgba(0,0,0,.25)}
     .brand b{font-size:15px;letter-spacing:.18em}.brand small{display:block;color:var(--muted);margin-top:4px}.roundbox{font-size:12px;text-align:right}.roundbox strong{display:block;font-size:22px;color:var(--accent)}
@@ -28,15 +31,17 @@
     .primary{border:0;border-radius:12px;padding:12px 15px;background:var(--accent);color:#10130b;font-weight:900}.secondary{border:1px solid var(--line);border-radius:12px;padding:12px 15px;background:#171b2a;color:#fff;font-weight:700}.choices{display:grid;gap:10px;margin-top:14px}.choice{border:1px solid var(--line);background:#111522;border-radius:14px;padding:12px;color:#fff;text-align:left}.choice:hover{border-color:rgba(216,255,79,.65);transform:translateY(-1px)}.choice b{display:block;margin-bottom:4px}.choice small{color:var(--muted);line-height:1.35}.event-type{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;background:rgba(109,167,255,.14);color:#b8d2ff;border:1px solid rgba(109,167,255,.28)}
     .impact{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.impact span{font-size:11px;padding:4px 7px;border-radius:8px;background:rgba(255,255,255,.06)}
     .note{font-size:12px;color:#c7cce0;background:rgba(109,167,255,.08);border-left:3px solid var(--blue);padding:10px 12px;border-radius:8px;margin:12px 0}.meter{height:7px;background:#090c15;border-radius:99px;overflow:hidden;margin-top:6px}.meter i{display:block;height:100%;background:linear-gradient(90deg,#ff657f,#ffd66d,#75ff9d);width:50%}
-    @media(max-width:900px){#app{grid-template-columns:1fr}#sidebar{position:absolute;z-index:10;right:10px;top:90px;width:min(340px,calc(100% - 20px));max-height:55vh;border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.5)}#hint{right:14px}.grid{grid-template-columns:1fr}.brand small{display:none}}
+    @media(max-width:900px){body{overflow:auto}#app{display:block;min-height:100%;height:auto}#stage{height:62vh;min-height:480px}#sidebar{position:relative;z-index:10;width:auto;margin:0 10px 20px;border:1px solid var(--line);border-radius:18px}#hint{right:14px}.grid{grid-template-columns:1fr}.brand small{display:none}#cityBoard{inset:82px 8px 52px;padding:10px;gap:4px;border-width:6px}.districtlabel{display:none}.citytile .tree{display:none}.citytile .building{left:6px;bottom:5px;width:60%}}
   </style>
 </head>
 <body>
 <div id="app">
   <main id="stage">
     <div id="three"></div>
+    <div id="cityBoard" aria-label="Visible city game board"></div>
+    <span class="districtlabel label-low">UNDER-RESOURCED</span><span class="districtlabel label-working">WORKING DISTRICT</span><span class="districtlabel label-middle">MIDDLE-INCOME</span><span class="districtlabel label-wealthy">WEALTHY DISTRICT</span>
     <div id="topbar"><div class="brand"><b>THE SOCIAL LADDER</b><small>A 3D sociology board game about systems, choices, luck, and unequal starting conditions.</small></div><div class="roundbox">LIFE STAGE<strong id="roundLabel">1 / 12</strong></div></div>
-    <div id="hint">Drag to rotate • Scroll/pinch to zoom • The board physically shifts as life stages change.</div>
+    <div id="hint">Follow your colored piece through the city. Neighborhood conditions change as you move.</div>
   </main>
   <aside id="sidebar">
     <div class="section"><h3>Your social location</h3><div id="identityText" class="identity">Choose a character to begin.</div></div>
@@ -45,7 +50,7 @@
       <div class="stat good"><span>Health</span><b id="health">0</b></div><div class="stat good"><span>Social capital</span><b id="social">0</b></div>
       <div class="stat bad"><span>Stress</span><b id="stress">0</b></div><div class="stat warn"><span>Opportunity</span><b id="opportunity">0</b></div>
     </div></div>
-    <div class="section"><h3>Turn</h3><button id="rollBtn" disabled>ROLL LIFE DICE</button><div class="minirow"><button id="viewBtn">Center board</button><button id="rulesBtn">How it works</button></div></div>
+    <div class="section"><h3 id="turnPlayer">Turn</h3><button id="rollBtn" disabled>ROLL LIFE DICE</button><div class="minirow"><button id="viewBtn">Show my piece</button><button id="rulesBtn">How it works</button></div></div>
     <div class="section"><h3>Timeline</h3><div id="log"></div></div>
   </aside>
 </div>
@@ -54,6 +59,8 @@
   <span class="event-type">CHARACTER CREATION</span><h1 style="margin-top:10px">Build a social location</h1>
   <p>This game does <b>not</b> treat race or identity as ability. Identity changes exposure to social systems, bias, access, representation, and institutional treatment. You still make choices, and chance still matters.</p>
   <div class="grid">
+    <div class="field"><label>Players (local multiplayer)</label><select id="playerCount"><option value="1">1 player</option><option value="2" selected>2 players</option><option value="3">3 players</option><option value="4">4 players</option></select></div>
+    <div class="field"><label>Player names</label><input id="playerNames" value="Player 1, Player 2" placeholder="Maya, Jordan, Alex" /></div>
     <div class="field"><label>Race / ethnicity</label><select id="race"><option>Black / African American</option><option>White</option><option>Latino / Hispanic</option><option>Asian American</option><option>Native American / Alaska Native</option><option>Middle Eastern / North African</option><option>Native Hawaiian / Pacific Islander</option><option>Multiracial</option><option>Custom / another identity</option></select></div>
     <div class="field"><label>Starting class</label><select id="class"><option>Low income</option><option>Working class</option><option selected>Middle income</option><option>Upper middle income</option><option>Wealthy</option></select></div>
     <div class="field"><label>Gender</label><select id="gender"><option>Woman</option><option>Man</option><option>Nonbinary</option><option>Another identity</option></select></div>
@@ -74,7 +81,8 @@
   const $=id=>document.getElementById(id);
   const clamp=(n,min=0,max=100)=>Math.max(min,Math.min(max,n));
   const rnd=a=>a[Math.floor(Math.random()*a.length)];
-  const state={turn:0,pos:0,identity:null,stats:{money:50,stability:50,health:70,social:50,stress:30,opportunity:50},history:[]};
+  const state={turn:0,pos:0,identity:null,stats:{money:50,stability:50,health:70,social:50,stress:30,opportunity:50},history:[],players:[],currentPlayer:0};
+  const playerColors=['#d8ff4f','#ff6888','#6db8ff','#ffd56a'];
 
   const raceBias={
     'Black / African American':1.18,'White':0.62,'Latino / Hispanic':1.02,'Asian American':0.82,'Native American / Alaska Native':1.2,'Middle Eastern / North African':1.02,'Native Hawaiian / Pacific Islander':1.0,'Multiracial':.92,'Custom / another identity':.9
@@ -171,8 +179,15 @@
     if(state.identity.disability!=='No disability selected'){state.stats.health-=5;state.stats.stress+=3}
     if(state.identity.immigration==='Temporary / uncertain status'){state.stats.stability-=8;state.stats.stress+=8}
     if(state.identity.gender==='Nonbinary'||state.identity.gender==='Another identity')state.stats.stress+=3;
-    normalize();render();$('setupModal').style.display='none';$('rollBtn').disabled=false;log('START','Your character enters the board. Starting conditions reflect class, neighborhood, accessibility, and institutional exposure—not personal worth.');movePawn(0,true);
+    normalize();
+    const count=Number($('playerCount').value),entered=$('playerNames').value.split(',').map(x=>x.trim()).filter(Boolean);
+    state.players=Array.from({length:count},(_,i)=>({name:entered[i]||`Player ${i+1}`,pos:0,turn:0,stats:{...state.stats},history:[]}));state.currentPlayer=0;
+    buildTokens();render();$('setupModal').style.display='none';$('rollBtn').disabled=false;log('START',`${state.players[0].name} enters the city. Starting conditions reflect class, neighborhood, accessibility, and institutional exposure—not personal worth.`);movePawn(0,true);
   }
+
+  function savePlayer(){const p=state.players[state.currentPlayer];if(!p)return;p.pos=state.pos;p.turn=state.turn;p.stats={...state.stats};p.history=[...state.history]}
+  function loadPlayer(i){state.currentPlayer=i;const p=state.players[i];state.pos=p.pos;state.turn=p.turn;state.stats={...p.stats};state.history=[...p.history];render();movePawn(state.pos,true)}
+  function nextPlayer(){savePlayer();let next=state.currentPlayer;for(let i=1;i<=state.players.length;i++){const candidate=(state.currentPlayer+i)%state.players.length,p=state.players[candidate];if(p.turn<12&&p.pos<35&&p.stats.health>0&&p.stats.stability>0){next=candidate;break}}loadPlayer(next);$('rollBtn').disabled=false;log('TURN',`${state.players[next].name}'s turn.`)}
 
   function normalize(){Object.keys(state.stats).forEach(k=>state.stats[k]=Math.round(clamp(state.stats[k])))}
   function applyFx(fx={}){Object.entries(fx).forEach(([k,v])=>state.stats[k]=(state.stats[k]||0)+v);normalize()}
@@ -187,7 +202,7 @@
 
   function roll(){
     $('rollBtn').disabled=true;const die=1+Math.floor(Math.random()*6);animateBoard();
-    setTimeout(()=>{state.pos=Math.min(35,state.pos+die);movePawn(state.pos);log('ROLL',`You rolled ${die} and moved to space ${state.pos+1}.`);setTimeout(()=>showEvent(),450)},500);
+    setTimeout(()=>{state.pos=Math.min(35,state.pos+die);movePawn(state.pos);log('ROLL',`${state.players[state.currentPlayer].name} rolled ${die} and moved to space ${state.pos+1}.`);setTimeout(()=>showEvent(),450)},500);
   }
   function showEvent(){
     const pool=Math.random()<.2?extraEvents:events; const ev=rnd(pool); state.currentEvent=ev;
@@ -206,7 +221,8 @@
     if(c.cost&&!canPay(c.cost)){log('LIMIT',`You could not afford the social/resource cost of “${c.label}.” The game converted it to a stress penalty.`);applyFx({stress:6,opportunity:-2});}
     else {if(c.cost)pay(c.cost);applyFx(c.fx);const result=riskResult(c.risk);if(c.risk){applyFx(result.success?c.risk.success:c.risk.fail);let detail=result.success?'worked':'did not work';if(result.bias)detail+=` (systemic-barrier risk was ${Math.round(result.prob*100)}% for this social location)`;log(result.success?'OUTCOME':'BARRIER',`${c.label}: ${detail}.`)}}
     state.turn++;render();$('eventModal').style.display='none';
-    if(state.turn>=12||state.pos>=35||state.stats.health<=0||state.stats.stability<=0){endGame()}else{$('rollBtn').disabled=false;phaseShift()}
+    savePlayer();
+    if(state.players.every(p=>p.turn>=12||p.pos>=35||p.stats.health<=0||p.stats.stability<=0)){endGame()}else{nextPlayer();phaseShift()}
   }
 
   function endGame(){
@@ -223,7 +239,7 @@
 
   function render(){
     const s=state.stats;['money','stability','health','social','stress','opportunity'].forEach(k=>$(k).textContent=s[k]);$('roundLabel').textContent=`${Math.min(state.turn+1,12)} / 12`;
-    if(state.identity)$('identityText').innerHTML=`<b>${state.identity.race}</b><br>${state.identity.gender} • ${state.identity.class}<br>${state.identity.neighborhood} neighborhood<br>${state.identity.disability}<br>${state.identity.immigration}`;
+    if(state.identity){const p=state.players[state.currentPlayer];$('identityText').innerHTML=`<b>${p?p.name+' — ':''}${state.identity.race}</b><br>${state.identity.gender} • ${state.identity.class}<br>${state.identity.neighborhood} neighborhood<br>${state.identity.disability}<br>${state.identity.immigration}`;$('turnPlayer').textContent=p?`${p.name}'s turn`:'Turn'}
   }
   function log(tag,msg){state.history.unshift({tag,msg});$('log').innerHTML=state.history.slice(0,15).map(x=>`<div class="logitem"><span class="tag">${x.tag}</span>${x.msg}</div>`).join('')}
 
@@ -245,15 +261,22 @@
   }
   function resize(){const el=$('stage');camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();renderer.setSize(el.clientWidth,el.clientHeight)}
   function animate(){requestAnimationFrame(animate);group.rotation.y+=(targetRotY-group.rotation.y)*.05;group.rotation.x+=(targetRotX-group.rotation.x)*.05;tiles.forEach((t,i)=>{const wave=Math.sin(performance.now()/700+i*.55)*.035;t.position.y=t.userData.baseY+wave});renderer.render(scene,camera)}
-  function movePawn(idx,instant=false){if(!tiles.length)return;const t=tiles[Math.min(idx,tiles.length-1)],dest=new THREE.Vector3(t.position.x,1,t.position.z);if(instant){pawn.position.copy(dest);return}const start=pawn.position.clone(),begin=performance.now();function step(now){const q=Math.min(1,(now-begin)/420),e=1-Math.pow(1-q,3);pawn.position.lerpVectors(start,dest,e);pawn.position.y+=Math.sin(q*Math.PI)*1.7;if(q<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
+  function movePawn(idx,instant=false){
+    const board=$('cityBoard'),token=$(`token-${state.currentPlayer}`),cell=board.children[Math.min(idx,35)];
+    board.querySelectorAll('.citytile').forEach(x=>x.classList.remove('active'));if(cell)cell.classList.add('active');
+    if(token&&cell){const br=board.getBoundingClientRect(),cr=cell.getBoundingClientRect();token.style.left=`${cr.left-br.left+cr.width/2}px`;token.style.top=`${cr.top-br.top+cr.height/2}px`}
+    if(!tiles.length||!window.THREE)return;const t=tiles[Math.min(idx,tiles.length-1)],dest=new THREE.Vector3(t.position.x,1,t.position.z);if(instant){pawn.position.copy(dest);return}const start=pawn.position.clone(),begin=performance.now();function step(now){const q=Math.min(1,(now-begin)/420),e=1-Math.pow(1-q,3);pawn.position.lerpVectors(start,dest,e);pawn.position.y+=Math.sin(q*Math.PI)*1.7;if(q<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
+  function initCity(){const b=$('cityBoard');for(let i=0;i<36;i++){const d=i<9?'low':i<18?'working':i<27?'middle':'wealthy',tile=document.createElement('div');tile.className=`citytile district-${d}`;tile.innerHTML=`<span class="num">${i+1}</span><i class="building"></i><i class="tree"></i>`;b.appendChild(tile)}}
+  function buildTokens(){$('cityBoard').querySelectorAll('.token').forEach(x=>x.remove());state.players.forEach((p,i)=>{const t=document.createElement('div');t.className='token';t.id=`token-${i}`;t.style.background=playerColors[i];t.textContent=i+1;t.title=p.name;$('cityBoard').appendChild(t)});state.players.forEach((p,i)=>{const old=state.currentPlayer;state.currentPlayer=i;movePawn(p.pos,true);state.currentPlayer=old})}
   function animateBoard(){targetRotY-=.35;tiles.forEach((t,i)=>{if(i%3===0)t.userData.baseY=.22;setTimeout(()=>t.userData.baseY=0,420)})}
   function phaseShift(){if(state.turn%3===0){targetRotY-=.6;targetRotX=.62+Math.random()*.18;tiles.forEach((t,i)=>{if((i+state.turn)%4===0)t.userData.baseY=.5;setTimeout(()=>t.userData.baseY=0,700)})}}
   function bindControls(){let drag=false,lastX=0,lastY=0;const c=renderer.domElement;c.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;c.setPointerCapture(e.pointerId)});c.addEventListener('pointermove',e=>{if(!drag)return;targetRotY+=(e.clientX-lastX)*.008;targetRotX=clamp(targetRotX+(e.clientY-lastY)*.006,.28,1.2);lastX=e.clientX;lastY=e.clientY});c.addEventListener('pointerup',()=>drag=false);c.addEventListener('wheel',e=>{camera.position.z=clamp(camera.position.z+e.deltaY*.01,10,28);camera.position.y=clamp(camera.position.y+e.deltaY*.004,7,20)},{passive:true})}
 
   $('startBtn').onclick=startGame;$('rollBtn').onclick=roll;$('restartBtn').onclick=()=>location.reload();$('closeEndBtn').onclick=()=>$('endModal').style.display='none';
-  $('viewBtn').onclick=()=>{targetRotY=-.55;targetRotX=.72;camera.position.set(0,13,18)};
+  $('playerCount').onchange=()=>{$('playerNames').value=Array.from({length:Number($('playerCount').value)},(_,i)=>`Player ${i+1}`).join(', ')};
+  $('viewBtn').onclick=()=>movePawn(state.pos,true);
   $('rulesBtn').onclick=()=>alert('Goal: survive 12 life stages while balancing money, stability, health, social capital, stress, and opportunity. Every turn you roll, move, and face a scenario. Identity affects exposure to structural barriers in selected events; it never changes intelligence, morality, effort, or inherent ability. There is no single “winner”: compare timelines across different characters to see how systems, networks, luck, and choices compound.');
-  init3D();render();
+  initCity();if(window.THREE){try{init3D()}catch(e){console.warn('Optional 3D layer unavailable; visible city board remains active.',e)}}render();
 })();
 </script>
 </body>
