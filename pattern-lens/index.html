@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pattern Lens</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header>
+      <div>
+        <h1>Pattern Lens</h1>
+        <p>Consent-based recurring behavior prediction</p>
+      </div>
+      <button id="notifyBtn">Enable alerts</button>
+    </header>
+
+    <section class="notice">
+      Use only with people who know and agree to being included. Predictions are probabilistic, not certainty.
+    </section>
+
+    <section class="grid two">
+      <article class="card">
+        <h2>Add participant</h2>
+        <form id="profileForm">
+          <label>Name or nickname<input id="name" required /></label>
+          <label>Context<input id="context" placeholder="friend, teammate, household..." /></label>
+          <label class="check"><input id="consent" type="checkbox" required /> Participant has consented</label>
+          <button type="submit">Add profile</button>
+        </form>
+      </article>
+
+      <article class="card">
+        <h2>Log observation</h2>
+        <form id="eventForm">
+          <label>Participant<select id="person" required></select></label>
+          <label>Behavior/event<input id="behavior" required placeholder="arrives, calls, takes a walk..." /></label>
+          <label>Date & time<input id="when" type="datetime-local" required /></label>
+          <label>Context / preceding condition<input id="preceding" placeholder="after work, after lunch, rainy day..." /></label>
+          <label>Location category<input id="location" placeholder="work, cafe, home, gym..." /></label>
+          <button type="submit">Log event</button>
+        </form>
+      </article>
+    </section>
+
+    <section class="grid three stats" id="stats"></section>
+
+    <section class="grid two">
+      <article class="card">
+        <h2>Upcoming predictions</h2>
+        <div id="predictions"></div>
+      </article>
+      <article class="card">
+        <h2>Recent observations</h2>
+        <div id="events"></div>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>Participants</h2>
+      <div id="profiles"></div>
+    </section>
+
+    <section class="card">
+      <h2>Data</h2>
+      <div class="actions">
+        <button id="exportBtn">Export JSON</button>
+        <label class="file-btn">Import JSON<input id="importInput" type="file" accept="application/json" /></label>
+        <button class="danger" id="clearBtn">Delete all data</button>
+      </div>
+    </section>
+  </main>
+<script src="app.js"></script>
+</body>
+</html>
